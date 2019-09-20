@@ -1,0 +1,5 @@
+__pycache__
+.vscode/
+build/
+dist/
+nanome_chemical_properties.egg-info/
