@@ -174,7 +174,7 @@ class ChemicalProperties(nanome.PluginInstance):
 def main():
     plugin = nanome.Plugin("Chemical Properties", "Calculates and displays different properties of chemicals", "", False)
     plugin.set_plugin_class(ChemicalProperties)
-    plugin.run('192.168.1.49', 8888)
+    plugin.run('127.0.0.1', 8888)
 
 if __name__ == "__main__":
     main()
