@@ -50,20 +50,7 @@ class ChemicalProperties(nanome.PluginInstance):
         self.on_run()
 
     def on_run(self):
-        # self.do_the_thing()
         self.display_menu()
-
-    def do_the_thing(self):
-        def got_deep(complexes):
-            complex = complexes[0]
-            complex.io.to_sdf(self.temp_sdf.name)
-            complex = nanome.api.structure.Complex.io.from_sdf(path=self.temp_sdf.name)
-            self.add_to_workspace([complex])
-
-        def got_shallow(complexes):
-            self.request_complexes([complexes[0].index], got_deep)
-
-        self.request_complex_list(got_shallow)
 
     def create_menu(self):
         self.menu = nanome.ui.Menu.io.from_json(MENU_PATH)
