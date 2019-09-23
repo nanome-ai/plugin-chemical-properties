@@ -97,7 +97,7 @@ class ChemicalProperties(nanome.PluginInstance):
             for complex in complexes:
                 item = self.pfb_complex.clone()
                 btn = item.get_content()
-                btn.set_all_text(complex.name)
+                btn.set_all_text(complex.full_name)
                 if self.selected_complex:
                     btn.selected = complex.index == self.selected_complex.index
                 btn.complex = complex
