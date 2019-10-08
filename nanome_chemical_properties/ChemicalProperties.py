@@ -1,8 +1,10 @@
 import nanome
+from nanome.util import Logs
 from nanome.util.enums import NotificationTypes
 
 import os
 import tempfile
+import shutil
 from cairosvg import svg2png
 from datetime import datetime
 
@@ -39,7 +41,7 @@ class ChemicalProperties(nanome.PluginInstance):
 
     def on_stop(self):
         # clean up temp files
-        os.remove(self.temp_dir.name)
+        shutil.rmtree(self.temp_dir.name)
 
     def on_complex_added(self):
         self.refresh_complexes()
@@ -87,6 +89,9 @@ class ChemicalProperties(nanome.PluginInstance):
 
         self.btn_exit_snapshots = menu.root.find_node("Exit Snapshots Button").get_content()
         self.btn_exit_snapshots.register_pressed_callback(self.view_single)
+
+        self.btn_export = menu.root.find_node("Export Button").get_content()
+        self.btn_export.register_pressed_callback(self.export_snapshots)
 
         self.btn_select_properties = menu.root.find_node("Select Properties Button").get_content()
         self.btn_select_properties.register_pressed_callback(self.toggle_properties_panel)
@@ -306,8 +311,10 @@ class ChemicalProperties(nanome.PluginInstance):
     def toggle_properties_panel(self, button=None, enable=None):
         show_sidepanel = enable if enable is not None else not self.ln_properties_panel.enabled
         self.ln_properties_panel.enabled = show_sidepanel
+
         text = "done" if show_sidepanel else "select properties"
         self.btn_select_properties.set_all_text(text)
+
         if enable is None:
             self.update_menu(self.menu)
 
@@ -421,6 +428,27 @@ class ChemicalProperties(nanome.PluginInstance):
 
         self.refresh_snapshots_values()
         self.toggle_complex_panel()
+
+    def export_snapshots(self, button=None):
+        file = nanome.util.FileSaveData()
+        filename = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '.csv'
+        file.path = '..\\snapshots\\' + filename
+        file.write_text(','.join(['SMILES'] + self.calc.short_labels) + '\n')
+
+        for complex in self.snapshots:
+            smiles = Chem.MolToSmiles(complex.mol)
+            values = list(list(zip(*complex.properties))[2])
+            file.write_text(','.join([smiles] + values) + '\n')
+
+        def on_save_files_result(result_list):
+            result = result_list[0]
+
+            if result.error_code == nanome.util.FileErrorCode.no_error:
+                self.send_notification(NotificationTypes.success, "saved to ~\\Documents\\nanome\\snapshots")
+            else:
+                self.send_notification(NotificationTypes.error, "error exporting csv")
+
+        self.save_files([file], on_save_files_result)
 
 def main():
     plugin = nanome.Plugin("Chemical Properties", "Calculates and displays different properties of chemicals using the RDKit Python library", "", False)
