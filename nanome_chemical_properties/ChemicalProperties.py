@@ -12,7 +12,10 @@ from rdkit import Chem
 from rdkit.Chem import Draw, AllChem
 from .PropertyCalculator import PropertyCalculator
 
-MENU_PATH = os.path.join(os.path.dirname(__file__), 'menu.json')
+BASE_DIR = os.path.join(os.path.dirname(__file__))
+MENU_PATH = os.path.join(BASE_DIR, 'menu.json')
+EDIT_ICON = os.path.join(BASE_DIR, 'icons', 'edit.png')
+CHECK_ICON = os.path.join(BASE_DIR, 'icons', 'check.png')
 
 # mol 2d image drawing options
 Draw.DrawingOptions.atomLabelFontSize = 40
@@ -32,6 +35,7 @@ class ChemicalProperties(nanome.PluginInstance):
         self.selected_properties = [0, 1, 2, 3, 4, 5, 6, 7]
         self.snapshots = []
         self.snapshots_sort = [None, 0]
+        self.snapshot_index = 0
 
         self.create_menu()
         self.on_run()
@@ -97,9 +101,17 @@ class ChemicalProperties(nanome.PluginInstance):
         self.btn_select_properties.register_pressed_callback(self.toggle_properties_panel)
 
         # complex info panel elements
+        self.ln_complex_name = menu.root.find_node("Complex Name")
+        self.ln_complex_input = menu.root.find_node("Complex Name Input")
         self.ln_complex_image = menu.root.find_node("Complex Image")
-        self.lbl_complex_name = menu.root.find_node("Complex Name").get_content()
+
+        self.lbl_complex_name = self.ln_complex_name.get_content()
         self.lbl_complex_info = menu.root.find_node("Complex Info Label").get_content()
+
+        self.inp_complex_name = self.ln_complex_input.get_content()
+
+        self.btn_complex_edit = menu.root.find_node("Complex Edit Button").get_content()
+        self.btn_complex_edit.register_pressed_callback(self.toggle_complex_edit)
 
         self.btn_complex_info_close = menu.root.find_node("Complex Close Button").get_content()
         self.btn_complex_info_close.register_pressed_callback(self.toggle_complex_panel)
@@ -110,7 +122,7 @@ class ChemicalProperties(nanome.PluginInstance):
         self.btn_complex_delete = menu.root.find_node("Complex Delete Button").get_content()
         self.btn_complex_delete.register_pressed_callback(self.delete_complex)
 
-        self.display_menu()
+        self.update_menu(self.menu)
 
     def display_menu(self):
         self.menu.enabled = True
@@ -299,12 +311,14 @@ class ChemicalProperties(nanome.PluginInstance):
         def full_complexes_received(complexes):
             complex = complexes[0]
             complex.index = 0
+            complex.full_name = str(self.snapshot_index)
             complex.timestamp = datetime.now()
             complex.properties = self.calculate_properties(complex, range(self.calc.num_props))
             generate_image(complex)
 
             self.snapshots.append(complex)
-            self.send_notification(NotificationTypes.success, complex.full_name + " added to snapshots")
+            self.snapshot_index += 1
+            self.send_notification(NotificationTypes.success, "snapshot %s created" % complex.full_name)
 
         self.request_complexes([self.selected_complex.index], full_complexes_received)
 
@@ -323,6 +337,7 @@ class ChemicalProperties(nanome.PluginInstance):
 
         if self.ln_complex_info.enabled:
             complex = button.complex
+            self.ln_complex_info.complex = complex
             self.lbl_complex_name.text_value = complex.full_name
             self.lbl_complex_info.text_value = complex.timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -332,7 +347,29 @@ class ChemicalProperties(nanome.PluginInstance):
             self.btn_complex_load.complex = complex
             self.btn_complex_delete.complex = complex
 
+            self.toggle_complex_edit(edit=False)
+
         self.update_menu(self.menu)
+
+    def toggle_complex_edit(self, button=None, edit=None):
+        is_editing = edit if edit is not None else self.ln_complex_name.enabled
+        self.ln_complex_name.enabled = not is_editing
+        self.ln_complex_input.enabled = is_editing
+
+        icon = CHECK_ICON if is_editing else EDIT_ICON
+        self.btn_complex_edit.set_all_icon(icon)
+
+        if is_editing:
+            complex_name = self.ln_complex_info.complex.full_name
+            self.inp_complex_name.input_text = complex_name
+        elif edit is None:
+            complex_name = self.inp_complex_name.input_text
+            self.ln_complex_info.complex.full_name = complex_name
+            self.lbl_complex_name.text_value = complex_name
+            self.refresh_snapshots_values()
+
+        if edit is None:
+            self.update_menu(self.menu)
 
     def set_snapshots_sort(self, button):
         prop_index = button.prop_index
@@ -365,7 +402,7 @@ class ChemicalProperties(nanome.PluginInstance):
 
         heading = self.pfb_heading.clone()
         btn = heading.get_content()
-        btn.set_all_text("complex")
+        btn.set_all_text("ID")
         btn.prop_index = -1
         btn.selected = self.snapshots_sort[0] == -1 and self.snapshots_sort[1] != 0
         btn.register_pressed_callback(self.set_snapshots_sort)
@@ -392,6 +429,8 @@ class ChemicalProperties(nanome.PluginInstance):
                 sort_fn = lambda complex: float(complex.properties[prop_index][2])
 
             sorted_complexes = sorted(sorted_complexes, key=sort_fn, reverse=reverse)
+
+        self.btn_export.unusable = not self.snapshots
 
         self.ls_snapshots.items.clear()
         for complex in sorted_complexes:
@@ -433,12 +472,12 @@ class ChemicalProperties(nanome.PluginInstance):
         file = nanome.util.FileSaveData()
         filename = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '.csv'
         file.path = '..\\snapshots\\' + filename
-        file.write_text(','.join(['SMILES'] + self.calc.short_labels) + '\n')
+        file.write_text(','.join(['ID', 'SMILES'] + self.calc.short_labels) + '\n')
 
         for complex in self.snapshots:
             smiles = Chem.MolToSmiles(complex.mol)
             values = list(list(zip(*complex.properties))[2])
-            file.write_text(','.join([smiles] + values) + '\n')
+            file.write_text(','.join([complex.full_name, smiles] + values) + '\n')
 
         def on_save_files_result(result_list):
             result = result_list[0]
