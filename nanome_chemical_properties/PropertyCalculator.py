@@ -13,8 +13,7 @@ class PropertyCalculator():
             ("HBA", "# H-Bond Acceptors", "%d", mDesc.CalcNumHBA),
             ("HBD", "# H-Bond Donors", "%d", mDesc.CalcNumHBD),
             ("RB", "# Rotatable Bonds", "%d", mDesc.CalcNumRotatableBonds),
-            ("AR", "# Aromatic Rings", "%d", mDesc.CalcNumAromaticRings),
-            ("EMW", "Exact Molecular Weight", "%.3f", mDesc.CalcExactMolWt)
+            ("AR", "# Aromatic Rings", "%d", mDesc.CalcNumAromaticRings)
         ]
 
     def calc_property(self, mol, index):
