@@ -471,7 +471,7 @@ class ChemicalProperties(nanome.PluginInstance):
     def export_snapshots(self, button=None):
         file = nanome.util.FileSaveData()
         filename = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '.csv'
-        file.path = '..\\snapshots\\' + filename
+        file.path = 'snapshots\\' + filename
         file.write_text(','.join(['ID', 'SMILES'] + self.calc.short_labels) + '\n')
 
         for complex in self.snapshots:
@@ -483,7 +483,7 @@ class ChemicalProperties(nanome.PluginInstance):
             result = result_list[0]
 
             if result.error_code == nanome.util.FileErrorCode.no_error:
-                self.send_notification(NotificationTypes.success, "saved to ~\\Documents\\nanome\\snapshots")
+                self.send_notification(NotificationTypes.success, "saved to Documents\\nanome\\snapshots")
             else:
                 self.send_notification(NotificationTypes.error, "error exporting csv")
 
