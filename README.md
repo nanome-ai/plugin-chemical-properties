@@ -10,6 +10,8 @@ $ pip install nanome-chemical-properties
 
 This plugin requires `rdkit` to be installed and in the `PATH` variable.
 
+Installation instructions for `rdkit` can be found [here](http://www.rdkit.org/docs/Install.html)
+
 ### Usage
 
 To start the plugin:
