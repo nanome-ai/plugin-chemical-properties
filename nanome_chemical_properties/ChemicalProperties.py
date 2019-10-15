@@ -12,7 +12,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw, AllChem
 from .PropertyCalculator import PropertyCalculator
 
-BASE_DIR = os.path.join(os.path.dirname(__file__))
+BASE_DIR = os.path.dirname(__file__)
 MENU_PATH = os.path.join(BASE_DIR, 'menu.json')
 EDIT_ICON = os.path.join(BASE_DIR, 'icons', 'edit.png')
 CHECK_ICON = os.path.join(BASE_DIR, 'icons', 'check.png')
