@@ -16,7 +16,7 @@ setup(
 	url='https://github.com/nanome-ai/plugin-chemical-properties',
 	platforms="any",
 	keywords=['virtual-reality', 'chemistry', 'python', 'api', 'plugin'],
-	install_requires=['nanome'],
+	install_requires=['nanome', 'rdkit', 'cairosvg'],
 	entry_points={"console_scripts": ["nanome-chemical-properties = nanome_chemical_properties.ChemicalProperties:main"]},
 	classifiers=[
 		'Development Status :: 3 - Alpha',
@@ -33,7 +33,8 @@ setup(
 	],
 	package_data={
         "nanome_chemical_properties": [
-            "*.json"
+            "*.json",
+			"icons/*"
         ]
 	},
 )
