@@ -278,6 +278,11 @@ class ChemicalProperties(nanome.PluginInstance):
 
     def calculate_properties(self, complex, property_indices):
         try:
+            # get only the current conformer
+            m = next(complex.molecules)
+            m.move_conformer(m.current_conformer, 0)
+            m.set_conformer_count(1)
+
             complex.io.to_sdf(self.temp_sdf.name)
             complex.mol = Chem.SDMolSupplier(self.temp_sdf.name)[0]
             if complex.mol is None:
