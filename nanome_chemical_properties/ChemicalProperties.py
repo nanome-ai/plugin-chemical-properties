@@ -7,6 +7,7 @@ import tempfile
 import shutil
 from cairosvg import svg2png
 from datetime import datetime
+from functools import partial
 
 from rdkit import Chem
 from rdkit.Chem import Draw, AllChem
@@ -116,8 +117,11 @@ class ChemicalProperties(nanome.PluginInstance):
         self.btn_complex_info_close = menu.root.find_node("Complex Close Button").get_content()
         self.btn_complex_info_close.register_pressed_callback(self.toggle_complex_panel)
 
+        self.btn_complex_swap = menu.root.find_node("Complex Swap Button").get_content()
+        self.btn_complex_swap.register_pressed_callback(partial(self.load_complex, True))
+
         self.btn_complex_load = menu.root.find_node("Complex Load Button").get_content()
-        self.btn_complex_load.register_pressed_callback(self.load_complex)
+        self.btn_complex_load.register_pressed_callback(partial(self.load_complex, False))
 
         self.btn_complex_delete = menu.root.find_node("Complex Delete Button").get_content()
         self.btn_complex_delete.register_pressed_callback(self.delete_complex)
@@ -315,15 +319,14 @@ class ChemicalProperties(nanome.PluginInstance):
 
         def full_complexes_received(complexes):
             complex = complexes[0]
-            complex.index = 0
-            complex.full_name = str(self.snapshot_index)
+            complex.snapshot_name = str(self.snapshot_index)
             complex.timestamp = datetime.now()
             complex.properties = self.calculate_properties(complex, range(self.calc.num_props))
             generate_image(complex)
 
             self.snapshots.append(complex)
             self.snapshot_index += 1
-            self.send_notification(NotificationTypes.success, "snapshot %s created" % complex.full_name)
+            self.send_notification(NotificationTypes.success, "snapshot %s created" % complex.snapshot_name)
 
         self.request_complexes([self.selected_complex.index], full_complexes_received)
 
@@ -343,12 +346,13 @@ class ChemicalProperties(nanome.PluginInstance):
         if self.ln_complex_info.enabled:
             complex = button.complex
             self.ln_complex_info.complex = complex
-            self.lbl_complex_name.text_value = complex.full_name
+            self.lbl_complex_name.text_value = complex.snapshot_name
             self.lbl_complex_info.text_value = complex.timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
             img = self.ln_complex_image.add_new_image(complex.image.name)
             img.scaling_option = nanome.util.enums.ScalingOptions.fit
 
+            self.btn_complex_swap.complex = complex
             self.btn_complex_load.complex = complex
             self.btn_complex_delete.complex = complex
 
@@ -365,11 +369,11 @@ class ChemicalProperties(nanome.PluginInstance):
         self.btn_complex_edit.set_all_icon(icon)
 
         if is_editing:
-            complex_name = self.ln_complex_info.complex.full_name
+            complex_name = self.ln_complex_info.complex.snapshot_name
             self.inp_complex_name.input_text = complex_name
         elif edit is None:
             complex_name = self.inp_complex_name.input_text
-            self.ln_complex_info.complex.full_name = complex_name
+            self.ln_complex_info.complex.snapshot_name = complex_name
             self.lbl_complex_name.text_value = complex_name
             self.refresh_snapshots_values()
 
@@ -429,7 +433,7 @@ class ChemicalProperties(nanome.PluginInstance):
             reverse = self.snapshots_sort[1] == -1
 
             if self.snapshots_sort[0] == -1: # sort by name first, then timestamp
-                sort_fn = lambda complex: (complex.full_name, complex.timestamp)
+                sort_fn = lambda complex: (complex.snapshot_name, complex.timestamp)
             else: # sort by property value
                 sort_fn = lambda complex: float(complex.properties[prop_index][2])
 
@@ -444,7 +448,7 @@ class ChemicalProperties(nanome.PluginInstance):
 
             ln_lbl = self.pfb_heading.clone()
             btn = ln_lbl.get_content()
-            btn.set_all_text(complex.full_name)
+            btn.set_all_text(complex.snapshot_name)
             btn.complex = complex
             btn.register_pressed_callback(self.toggle_complex_panel)
             ln.add_child(ln_lbl)
@@ -459,9 +463,23 @@ class ChemicalProperties(nanome.PluginInstance):
 
         self.update_menu(self.menu)
 
-    def load_complex(self, button):
+    def load_complex(self, swap, button):
         complex = button.complex
-        self.add_to_workspace([complex])
+
+        # hack to fix bonds not being loaded
+        old_complex = complex
+        complex.io.to_sdf(self.temp_sdf.name)
+        complex = nanome.structure.Complex.io.from_sdf(path=self.temp_sdf.name)
+        complex.index = old_complex.index
+        complex.snapshot_name = old_complex.snapshot_name
+        complex.full_name = old_complex.full_name
+        complex.position = old_complex.position
+        complex.rotation = old_complex.rotation
+
+        if not swap:
+            complex.index = -1
+            complex.full_name = complex.snapshot_name
+        self.update_structures_deep([complex])
 
     def delete_complex(self, button):
         for complex in self.snapshots:
@@ -482,7 +500,7 @@ class ChemicalProperties(nanome.PluginInstance):
         for complex in self.snapshots:
             smiles = Chem.MolToSmiles(complex.mol)
             values = list(list(zip(*complex.properties))[2])
-            file.write_text(','.join([complex.full_name, smiles] + values) + '\n')
+            file.write_text(','.join([complex.snapshot_name, smiles] + values) + '\n')
 
         def on_save_files_result(result_list):
             result = result_list[0]
