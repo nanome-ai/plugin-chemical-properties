@@ -319,9 +319,11 @@ class ChemicalProperties(nanome.PluginInstance):
 
         def full_complexes_received(complexes):
             complex = complexes[0]
+            complex.properties = self.calculate_properties(complex, range(self.calc.num_props))
+            if not complex.properties: return
+
             complex.snapshot_name = str(self.snapshot_index)
             complex.timestamp = datetime.now()
-            complex.properties = self.calculate_properties(complex, range(self.calc.num_props))
             generate_image(complex)
 
             self.snapshots.append(complex)
