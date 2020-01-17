@@ -1,0 +1,1 @@
+docker build -f chemical-properties.Dockerfile -t chemical-properties:latest ..
