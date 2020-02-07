@@ -107,7 +107,7 @@ class SnapshotsMenu:
 
             ln_img = self.pfb_value.clone()
             ln_img.forward_dist = -0.001
-            img = ln_img.add_new_image(complex.image)
+            img = ln_img.add_new_image(complex.thumbnail)
             img.scaling_option = nanome.util.enums.ScalingOptions.fit
             ln.add_child(ln_img)
 

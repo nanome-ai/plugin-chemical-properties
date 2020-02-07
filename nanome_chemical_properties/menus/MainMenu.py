@@ -86,11 +86,6 @@ class MainMenu:
             button.selected = True
             self.plugin.update_content(button)
 
-            if self.ln_no_selection.enabled:
-                self.ln_no_selection.enabled = False
-                self.ln_results.enabled = True
-                self.plugin.update_node(self.ln_panel_right)
-
             self.compute_results()
 
         def display_complexes(complexes):
@@ -135,16 +130,20 @@ class MainMenu:
             self.selected_complex = complex
             self.update_preview(text='loading...')
 
+            success = self.plugin.rdk.prepare_complex(complex)
+
+            self.ln_no_selection.enabled = not success
+            self.ln_results.enabled = success
+            self.plugin.update_node(self.ln_panel_right)
+
+            if not success:
+                self.selected_index = None
+                self.selected_complex = None
+                self.update_preview(text='rdkit error')
+                return
+
             self.lbl_complex.text_value = complex.full_name
             self.plugin.update_content(self.lbl_complex)
-
-            try:
-                self.plugin.rdk.prepare_complex(complex)
-            except:
-                self.update_preview(text='rdkit error')
-                self.selected_index = None
-                self.refresh_snapshot_button()
-                return
 
             self.plugin.rdk.add_image(complex)
             self.plugin.rdk.add_properties(complex)
@@ -154,8 +153,9 @@ class MainMenu:
 
             self.update_preview(image=complex.image)
 
+        self.lbl_complex.text_value = 'loading...'
         self.lst_results.items.clear()
-        self.plugin.update_content(self.lst_results)
+        self.plugin.update_node(self.ln_results)
 
         if not self.selected_index:
             return

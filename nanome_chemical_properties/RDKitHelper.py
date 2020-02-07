@@ -30,9 +30,6 @@ class RDKitHelper:
             ('AR', '# Aromatic Rings', '%d', mDesc.CalcNumAromaticRings)
         ]
 
-    def __del__(self):
-        shutil.rmtree(self.temp_dir.name)
-
     @property
     def num_props(self):
         return len(self._properties)
@@ -54,8 +51,7 @@ class RDKitHelper:
 
         complex.io.to_sdf(self.temp_sdf.name)
         complex.rdmol = Chem.SDMolSupplier(self.temp_sdf.name)[0]
-        if complex.rdmol is None:
-            raise ValueError('rdkit was unable to parse the complex')
+        return complex.rdmol is not None
 
     # adds complex.properties
     def add_properties(self, complex):
@@ -65,6 +61,7 @@ class RDKitHelper:
 
     # adds complex.imag
     def add_image(self, complex):
+        complex.thumbnail = tempfile.NamedTemporaryFile(delete=False, suffix='.png', dir=self.temp_dir.name).name
         complex.image = tempfile.NamedTemporaryFile(delete=False, suffix='.png', dir=self.temp_dir.name).name
 
         mol = complex.rdmol
@@ -79,6 +76,7 @@ class RDKitHelper:
         svg = drawer.GetDrawingText()
         svg = svg.replace('stroke-linecap:butt', 'stroke-linecap:round')
 
+        svg2png(bytestring=svg, write_to=complex.thumbnail, output_width=256, output_height=192)
         svg2png(bytestring=svg, write_to=complex.image, output_width=1024, output_height=768)
 
     def add_smiles(self, complex):
