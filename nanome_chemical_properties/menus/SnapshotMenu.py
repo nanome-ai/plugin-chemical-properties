@@ -19,7 +19,9 @@ class SnapshotMenu:
 
     def create_menu(self):
         self.menu = nanome.ui.Menu.io.from_json(MENU_PATH)
-        self.menu.title = 'Snapshot ' + self.complex.full_name
+        title = 'Snapshot ' + self.complex.full_name
+        title = title[:20] + (title[20:] and '...')
+        self.menu.title = title
         self.menu.index = self.index
         root = self.menu.root
 
@@ -111,7 +113,11 @@ class SnapshotMenu:
             title = self.inp_title.input_text
             self.complex.full_name = title
             self.lbl_title.text_value = title
-            self.menu.title = 'Snapshot ' + title
+
+            title = 'Snapshot ' + title
+            title = title[:20] + (title[20:] and '...')
+            self.menu.title = title
+
             self.plugin.refresh()
 
         self.plugin.update_menu(self.menu)
@@ -123,11 +129,18 @@ class SnapshotMenu:
         self.plugin.refresh()
 
     def load_snapshot(self, button=None, swap=False):
+        def on_complexes(complex, complex_list):
+            if complex_list:
+                complex.position = complex_list[0].position
+                complex.rotation = complex_list[0].rotation
+            self.plugin.update_structures_deep([complex])
+
         complex = self.complex
-        index = complex.index
 
         if not swap:
+            index = complex.index
             complex.index = -1
-
-        self.plugin.update_structures_deep([complex])
-        complex.index = index
+            self.plugin.update_structures_deep([complex])
+            complex.index = index
+        else:
+            self.plugin.request_complexes([complex.index], partial(on_complexes, complex))
