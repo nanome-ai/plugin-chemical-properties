@@ -24,6 +24,9 @@ class ChemicalProperties(nanome.PluginInstance):
 
         self.on_run()
 
+    def on_stop(self):
+        del self.rdk
+
     def on_run(self):
         self.menu_main.show_menu()
 
