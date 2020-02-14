@@ -130,7 +130,7 @@ class SnapshotMenu:
 
     def load_snapshot(self, button=None, swap=False):
         def on_complexes(complex, complex_list):
-            if complex_list:
+            if complex_list[0]:
                 complex.position = complex_list[0].position
                 complex.rotation = complex_list[0].rotation
             self.plugin.update_structures_deep([complex])

@@ -94,6 +94,7 @@ class MainMenu:
             if self.selected_index not in self.display_complexes:
                 self.selected_index = None
                 self.selected_complex = None
+                self.refresh_snapshot_button()
                 self.refresh_results()
 
             self.lst_complexes.items.clear()
@@ -127,6 +128,7 @@ class MainMenu:
     def compute_results(self, button=None):
         def complexes_received(complexes):
             complex = complexes[0]
+
             self.selected_complex = complex
             self.update_preview(text='loading...')
 
@@ -164,6 +166,10 @@ class MainMenu:
 
     def refresh_results(self):
         if not self.selected_complex:
+            self.update_preview(text='preview')
+            self.ln_no_selection.enabled = True
+            self.ln_results.enabled = False
+            self.plugin.update_node(self.ln_panel_right)
             return
 
         self.lst_results.items.clear()

@@ -96,17 +96,19 @@ class SnapshotsMenu:
 
             btn = ln.add_new_button('')
             btn.outline.active = False
+            btn.mesh.active = True
+            btn.mesh.enabled.idle = False
+            btn.mesh.color.set_all(nanome.util.Color.Grey())
             btn.tooltip.title = complex.full_name
             # btn.tooltip.content = complex.timestamp.strftime('%Y-%m-%d %H:%M:%S')
             btn.tooltip.bounds.x = 1
             btn.tooltip.bounds.y = 0.25
-            btn.tooltip.positioning_target = btn.ToolTipPositioning.left
-            btn.tooltip.positioning_origin = btn.ToolTipPositioning.right
+            btn.tooltip.positioning_target = btn.ToolTipPositioning.bottom_left
+            btn.tooltip.positioning_origin = btn.ToolTipPositioning.top
             btn.complex = complex
             btn.register_pressed_callback(lambda b: self.plugin.view_snapshot(b.complex))
 
             ln_img = self.pfb_value.clone()
-            ln_img.forward_dist = -0.001
             img = ln_img.add_new_image(complex.thumbnail)
             img.scaling_option = nanome.util.enums.ScalingOptions.fit
             ln.add_child(ln_img)

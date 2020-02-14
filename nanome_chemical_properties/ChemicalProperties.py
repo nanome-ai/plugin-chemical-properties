@@ -4,7 +4,8 @@ from .RDKitHelper import RDKitHelper
 
 class ChemicalProperties(nanome.PluginInstance):
     def start(self):
-        self.set_plugin_list_button(self.PluginListButtonType.advanced_settings, 'Select properties')
+        self.set_plugin_list_button(self.PluginListButtonType.run, 'Open')
+        self.set_plugin_list_button(self.PluginListButtonType.advanced_settings, 'Select Properties')
 
         self.selected_properties = [0, 1, 2, 3, 4, 5, 6, 7]
         self.snapshots = []
@@ -16,11 +17,6 @@ class ChemicalProperties(nanome.PluginInstance):
 
         self.snapshot_menu_index = 3
         self.snapshot_menus = []
-
-        # TODO remove for nanome-lib 0.11.2
-        self.menu.root.get_children().append(self.menu_main.menu.root)
-        self.menu.root.get_children().append(self.menu_settings.menu.root)
-        self.menu.root.get_children().append(self.menu_snapshots.menu.root)
 
         self.on_run()
 
@@ -55,9 +51,6 @@ class ChemicalProperties(nanome.PluginInstance):
         menu_snapshot = SnapshotMenu(self, complex, self.snapshot_menu_index)
         self.snapshot_menus.append(menu_snapshot)
         self.snapshot_menu_index += 1
-
-        # TODO remove for nanome-lib 0.11.2
-        self.menu.root.get_children().append(menu_snapshot.menu.root)
 
 def main():
     plugin = nanome.Plugin("Chemical Properties", "Calculates and displays different properties of chemicals using the RDKit Python library", "", True)

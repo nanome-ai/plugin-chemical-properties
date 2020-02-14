@@ -8,7 +8,7 @@ setup(
 	packages=find_packages(),
 	version='0.2.1',
 	license='MIT',
-	description='Nanome Plugin displaying chemical properties for selected complex using rdkit',
+	description='A Nanome plugin to display chemical properties for a complex using rdkit',
 	long_description=README,
     long_description_content_type="text/markdown",
 	author='Nanome',
