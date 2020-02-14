@@ -1,6 +1,6 @@
 FROM continuumio/miniconda3
 
-ENV PLUGIN_SERVER=plugins.nanome.ai
+ENV ARGS=''
 
 COPY . /app
 WORKDIR /app
@@ -10,4 +10,4 @@ RUN pip install cairosvg
 RUN pip install nanome
 RUN conda install -c rdkit rdkit
 
-CMD python -m nanome_chemical_properties.ChemicalProperties -a ${PLUGIN_SERVER}
+CMD python run.py -a ${ARGS}
