@@ -73,6 +73,9 @@ class MainMenu:
             if self.selected_index == button.complex.index:
                 return
 
+            if self.selected_complex:
+                self.selected_complex.register_complex_updated_callback(None)
+
             self.selected_index = None
             self.refresh_snapshot_button()
 
@@ -128,6 +131,7 @@ class MainMenu:
     def compute_results(self, button=None):
         def complexes_received(complexes):
             complex = complexes[0]
+            complex.register_complex_updated_callback(self.compute_results)
 
             self.selected_complex = complex
             self.update_preview(text='loading...')
