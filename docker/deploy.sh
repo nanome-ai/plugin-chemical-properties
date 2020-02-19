@@ -1,23 +1,11 @@
-#!/bin/bash
+if [ "$(docker ps -aq -f name=chemical-properties)" != "" ]; then
+    # cleanup
+    echo "removing exited container"
+    docker rm -f chemical-properties
+fi
 
-USER=user
-SERVER=localhost
-SSH=$USER@$SERVER
-TAG=latest
-
-IMAGE=chemical-properties
-REPO=441665557124.dkr.ecr.us-west-1.amazonaws.com
-
-echo "" > remote-actions.txt
-
-echo "sudo docker pull $REPO/$IMAGE:$TAG" >> remote-actions.txt
-echo "sudo docker stop $IMAGE" >> remote-actions.txt
-echo "sudo docker rm -f $IMAGE" >> remote-actions.txt
-echo "sudo docker run \
-    -d --restart unless-stopped \
-    --name=$IMAGE  \
-    -p 8888:8888 \
-    $REPO/$IMAGE:$TAG" >> remote-actions.txt
-
-ssh $SSH 'bash -s' < remote-actions.txt
-rm remote-actions.txt
+docker run -d \
+--name chemical-properties \
+--restart unless-stopped \
+-e ARGS="$*" \
+chemical-properties
