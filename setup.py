@@ -33,7 +33,7 @@ setup(
 	],
 	package_data={
         "nanome_chemical_properties": [
-            "*.json",
+            "menus/json/*",
 			"icons/*"
         ]
 	},
