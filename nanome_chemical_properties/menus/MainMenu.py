@@ -4,6 +4,8 @@ from nanome.util.enums import NotificationTypes
 import os
 from datetime import datetime
 
+MAX_ATOM_COUNT = 200
+
 BASE_DIR = os.path.join(os.path.dirname(__file__))
 MENU_PATH = os.path.join(BASE_DIR, 'json/main.json')
 IMG_FRAME = os.path.join(BASE_DIR, '../icons/frame.png')
@@ -131,12 +133,15 @@ class MainMenu:
     def compute_results(self, button=None):
         def complexes_received(complexes):
             complex = complexes[0]
-            complex.register_complex_updated_callback(self.compute_results)
+            error = None
 
-            self.selected_complex = complex
-            self.update_preview(text='loading...')
-
-            success = self.plugin.rdk.prepare_complex(complex)
+            if len(list(complex.atoms)) > MAX_ATOM_COUNT:
+                success = False
+                error = 'structure too large to process'
+            else:
+                self.selected_complex = complex
+                self.update_preview(text='loading...')
+                success = self.plugin.rdk.prepare_complex(complex)
 
             self.ln_no_selection.enabled = not success
             self.ln_results.enabled = success
@@ -145,9 +150,11 @@ class MainMenu:
             if not success:
                 self.selected_index = None
                 self.selected_complex = None
-                self.update_preview(text='rdkit error')
+                self.update_preview(text='preview')
+                self.plugin.send_notification(NotificationTypes.message, error or 'rdkit was unable to process the structure')
                 return
 
+            complex.register_complex_updated_callback(self.compute_results)
             self.lbl_complex.text_value = complex.full_name
             self.plugin.update_content(self.lbl_complex)
 
