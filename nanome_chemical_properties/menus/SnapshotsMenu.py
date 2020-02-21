@@ -16,6 +16,7 @@ class SnapshotsMenu:
     def create_menu(self):
         self.menu = nanome.ui.Menu.io.from_json(MENU_PATH)
         self.menu.index = 2
+        self.menu.enabled = False
         root = self.menu.root
 
         self.pfb_heading = root.find_node('Prefab Heading')
