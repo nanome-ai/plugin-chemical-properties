@@ -22,6 +22,16 @@ To start the plugin:
 $ nanome-chemical-properties -a <plugin_server_address>
 ```
 
+### Docker Usage
+
+To run in a Docker container:
+
+```sh
+$ cd docker
+$ ./build.sh
+$ ./deploy.sh -a <plugin_server_address>
+```
+
 #### Basic properties
 
 In Nanome:
