@@ -11,6 +11,8 @@ MENU_PATH = os.path.join(BASE_DIR, 'json/main.json')
 IMG_FRAME = os.path.join(BASE_DIR, '../icons/frame.png')
 IMG_SELECTION = os.path.join(BASE_DIR, '../icons/selection.png')
 
+NO_CALLBACK = lambda *_: None
+
 class MainMenu:
     def __init__(self, plugin):
         self.plugin = plugin
@@ -76,7 +78,7 @@ class MainMenu:
                 return
 
             if self.selected_complex:
-                self.selected_complex.register_complex_updated_callback(None)
+                self.selected_complex.register_complex_updated_callback(NO_CALLBACK)
 
             self.selected_index = None
             self.refresh_snapshot_button()
