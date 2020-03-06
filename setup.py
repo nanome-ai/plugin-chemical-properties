@@ -6,7 +6,7 @@ README = (pathlib.Path(__file__).parent / "README.md").read_text()
 setup(
 	name='nanome-chemical-properties',
 	packages=find_packages(),
-	version='0.3.4',
+	version='0.3.5',
 	license='MIT',
 	description='A Nanome plugin to display chemical properties for a complex using rdkit',
 	long_description=README,
