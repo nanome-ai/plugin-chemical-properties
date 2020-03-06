@@ -53,7 +53,7 @@ class ChemicalProperties(nanome.PluginInstance):
         self.snapshot_menu_index += 1
 
 def main():
-    plugin = nanome.Plugin("Chemical Properties", "Calculates and displays different properties of chemicals using the RDKit Python library", "", True)
+    plugin = nanome.Plugin("Chemical Properties", "Calculates and displays different properties of chemicals using the RDKit Python library", "Analysis", True)
     plugin.set_plugin_class(ChemicalProperties)
     plugin.run('127.0.0.1', 8888)
 
