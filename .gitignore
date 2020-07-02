@@ -1,6 +1,7 @@
 __pycache__
-.vscode/
-build/
-dist/
-docker/.cachebust
-nanome_chemical_properties.egg-info/
+/.vscode
+/build
+/dist
+/docker/.cachebust
+*.egg-info
+*.log
