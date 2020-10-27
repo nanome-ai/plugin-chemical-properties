@@ -1,9 +1,6 @@
-FROM continuumio/miniconda3
+FROM nanome/plugin-env
 
 ENV ARGS=''
-
-RUN conda install -c rdkit rdkit
-RUN pip install cairosvg
 
 ARG CACHEBUST
 RUN pip install nanome
