@@ -13,7 +13,7 @@ Draw.DrawingOptions.atomLabelFontSize = 40
 Draw.DrawingOptions.dotsPerAngstrom = 100
 Draw.DrawingOptions.bondLineWidth = 8
 
-class RDKitHelper:
+class PropertiesHelper:
     def __init__(self):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_sdf = tempfile.NamedTemporaryFile(delete=False, suffix='.sdf', dir=self.temp_dir.name)
@@ -59,7 +59,7 @@ class RDKitHelper:
         for short_lbl, long_lbl, fmt, fn in self._properties:
             complex.properties.append((short_lbl, long_lbl, fmt % fn(complex.rdmol)))
 
-    # adds complex.imag
+    # adds complex.image
     def add_image(self, complex):
         complex.thumbnail = tempfile.NamedTemporaryFile(delete=False, suffix='.png', dir=self.temp_dir.name).name
         complex.image = tempfile.NamedTemporaryFile(delete=False, suffix='.png', dir=self.temp_dir.name).name

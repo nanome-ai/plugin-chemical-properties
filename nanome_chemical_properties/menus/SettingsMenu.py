@@ -43,7 +43,7 @@ class SettingsMenu:
             self.refresh_properties()
             self.plugin.refresh()
 
-        labels = self.plugin.rdk.long_labels
+        labels = self.plugin.helper.long_labels
 
         self.lst_properties.items.clear()
         for i, label in enumerate(labels):
