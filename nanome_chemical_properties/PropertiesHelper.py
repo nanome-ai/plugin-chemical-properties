@@ -1,23 +1,34 @@
+from nanome.util import Logs
+
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
 import rdkit.Chem.Descriptors as Desc
 import rdkit.Chem.rdMolDescriptors as mDesc
 from .ESOLCalculator import ESOLCalculator
 
-import tempfile
+import json
+import os
+import requests
 import shutil
+import tempfile
 from cairosvg import svg2png
+from datetime import datetime, timedelta
+from functools import partial
 
 # mol 2d image drawing options
 Draw.DrawingOptions.atomLabelFontSize = 40
 Draw.DrawingOptions.dotsPerAngstrom = 100
 Draw.DrawingOptions.bondLineWidth = 8
 
+API_CACHE_TIME = timedelta(seconds=1)
+API_SETTINGS = os.path.join(os.path.dirname(__file__), '..', 'config.json')
+
 class PropertiesHelper:
     def __init__(self):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.temp_sdf = tempfile.NamedTemporaryFile(delete=False, suffix='.sdf', dir=self.temp_dir.name)
 
+        self.api_cache = {}
         self.esol = ESOLCalculator()
         self._properties = [
             ('MW', 'Molecular Weight', '%.3f', Desc.MolWt),
@@ -30,6 +41,41 @@ class PropertiesHelper:
             ('AR', '# Aromatic Rings', '%d', mDesc.CalcNumAromaticRings)
         ]
 
+        if not os.path.exists(API_SETTINGS):
+            return
+
+        with open(API_SETTINGS, 'r') as f:
+            self.api = json.load(f)
+
+        if self.api.get('overwrite'):
+            self._properties = []
+
+        # validate config
+        try:
+            required_endpoint_keys = ['url', 'method', 'data']
+            required_property_keys = ['description', 'format', 'path']
+
+            for endpoint in self.api.get('endpoints'):
+                if not endpoint.get('name'):
+                    raise Exception('Invalid config: missing endpoint name')
+
+                test = [endpoint[k] for k in required_endpoint_keys]
+                for prop, info in endpoint.get('properties').items():
+                    test = [info[k] for k in required_property_keys]
+
+        except KeyError as key:
+            raise Exception(f'Invalid config: missing {key} on {endpoint["name"]}')
+
+        except TypeError:
+            raise Exception(f'Invalid config: array where object should be')
+
+        # register properties
+        for endpoint in self.api.get('endpoints'):
+            for prop, info in endpoint['properties'].items():
+                fn = partial(self.fetch_property, endpoint, prop)
+                p = (prop, info['description'], info['format'], fn)
+                self._properties.append(p)
+
     @property
     def num_props(self):
         return len(self._properties)
@@ -41,6 +87,51 @@ class PropertiesHelper:
     @property
     def long_labels(self):
         return list(list(zip(*self._properties))[1])
+
+    # query external property
+    def fetch_property(self, endpoint, prop, rdmol):
+        name = endpoint['name']
+        cache = self.api_cache.get(name)
+
+        if cache is None or datetime.now() - cache['time'] > API_CACHE_TIME:
+            url = endpoint['url']
+            method = endpoint['method']
+            data = endpoint['data']
+
+            try:
+                if data == 'smiles' and method == 'GET':
+                    smiles = Chem.MolToSmiles(rdmol)
+                    url = url.replace(':smiles', smiles)
+                    json = requests.get(url).json()
+
+                elif data == 'sdf' and method == 'POST':
+                    Chem.SDWriter(self.temp_sdf.name).write(rdmol)
+                    files = {'file': open(self.temp_sdf.name, 'rb')}
+                    json = requests.post(url, files=files).json()
+
+                else:
+                    Logs.error(f'Unsupported request type: {method} {data} on {name}')
+                    return None
+
+            except:
+                Logs.error(f'Failed to fetch {prop} on {name}')
+                return None
+
+            data = {}
+            for item, info in endpoint['properties'].items():
+                value = json
+
+                for key in info['path'].split('.'):
+                    value = value.get(key)
+                    data[item] = value
+
+                    if value is None:
+                        break
+
+            cache = { 'time': datetime.now(), 'data': data }
+            self.api_cache[name] = cache
+
+        return cache['data'][prop]
 
     # adds complex.rdmol
     def prepare_complex(self, complex):
@@ -57,7 +148,9 @@ class PropertiesHelper:
     def add_properties(self, complex):
         complex.properties = []
         for short_lbl, long_lbl, fmt, fn in self._properties:
-            complex.properties.append((short_lbl, long_lbl, fmt % fn(complex.rdmol)))
+            value = fn(complex.rdmol)
+            value = fmt % value if value is not None else 'ERR'
+            complex.properties.append((short_lbl, long_lbl, value))
 
     # adds complex.image
     def add_image(self, complex):

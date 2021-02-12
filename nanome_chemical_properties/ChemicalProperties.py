@@ -7,14 +7,14 @@ class ChemicalProperties(nanome.PluginInstance):
         self.set_plugin_list_button(self.PluginListButtonType.run, 'Open')
         self.set_plugin_list_button(self.PluginListButtonType.advanced_settings, 'Select Properties')
 
-        self.selected_properties = [0, 1, 2, 3, 4, 5, 6, 7]
-        self.snapshots = []
-
         self.helper = PropertiesHelper()
+        self.selected_properties = list(range(self.helper.num_props))
+
         self.menu_main = MainMenu(self)
         self.menu_settings = SettingsMenu(self)
         self.menu_snapshots = SnapshotsMenu(self)
 
+        self.snapshots = []
         self.snapshot_menu_index = 3
         self.snapshot_menus = []
 

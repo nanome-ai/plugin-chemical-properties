@@ -1,0 +1,36 @@
+{
+  "overwrite": false,
+  "endpoints": [
+    {
+      "name": "Example API 1",
+      "url": "https://example.com/chem/:smiles",
+      "method": "GET",
+      "data": "smiles",
+      "properties": {
+        "PROP1": {
+          "description": "Example Property 1",
+          "format": "%.3f units",
+          "path": "path.to.prop1"
+        },
+        "PROP2": {
+          "description": "Example Property 2",
+          "format": "%d",
+          "path": "prop2"
+        }
+      }
+    },
+    {
+      "name": "Example API 2",
+      "url": "https://example.com/chem",
+      "method": "POST",
+      "data": "sdf",
+      "properties": {
+        "PROP3": {
+          "description": "Example Property 3",
+          "format": "%s",
+          "path": "properties.prop3"
+        }
+      }
+    }
+  ]
+}
