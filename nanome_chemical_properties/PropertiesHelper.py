@@ -8,6 +8,7 @@ from .ESOLCalculator import ESOLCalculator
 
 import json
 import os
+import re
 import requests
 import shutil
 import tempfile
@@ -114,19 +115,31 @@ class PropertiesHelper:
                     return None
 
             except:
-                Logs.error(f'Failed to fetch {prop} on {name}')
+                Logs.error(f'Failed to fetch {name}')
                 return None
 
             data = {}
             for item, info in endpoint['properties'].items():
                 value = json
+                data[item] = None
 
-                for key in info['path'].split('.'):
-                    value = value.get(key)
+                try:
+                    for path in info['path'].replace('][', '].[').split('.'):
+                        match = re.search(r'([^\[]+)?(?:\[(\d+)\])?', path)
+                        (key, index) = match.groups()
+
+                        if key is not None:
+                            value = value.get(key)
+                        if index is not None:
+                            value = value[int(index)]
+
+                    if type(value) not in [str, int, float, bool]:
+                        raise TypeError
+
                     data[item] = value
 
-                    if value is None:
-                        break
+                except:
+                    Logs.error(f'Invalid path for {item} on {name}')
 
             cache = { 'time': datetime.now(), 'data': data }
             self.api_cache[name] = cache
