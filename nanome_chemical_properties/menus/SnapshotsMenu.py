@@ -68,7 +68,7 @@ class SnapshotsMenu:
         for prop_index in self.plugin.selected_properties:
             heading = self.pfb_heading.clone()
             btn = heading.get_content()
-            btn.text.value.set_all(self.plugin.rdk.short_labels[prop_index])
+            btn.text.value.set_all(self.plugin.helper.short_labels[prop_index])
             btn.prop_index = prop_index
             btn.selected = self.snapshots_sort[0] == prop_index
             btn.register_pressed_callback(self.set_snapshots_sort)
@@ -128,7 +128,7 @@ class SnapshotsMenu:
         file = nanome.util.FileSaveData()
         filename = datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.csv'
         file.path = 'snapshots\\' + filename
-        file.write_text(','.join(['NAME', 'SMILES'] + self.plugin.rdk.short_labels) + '\n')
+        file.write_text(','.join(['NAME', 'SMILES'] + self.plugin.helper.short_labels) + '\n')
 
         for complex in self.plugin.snapshots:
             values = list(list(zip(*complex.properties))[2])

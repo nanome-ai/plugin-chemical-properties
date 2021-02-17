@@ -143,7 +143,7 @@ class MainMenu:
             else:
                 self.selected_complex = complex
                 self.update_preview(text='loading...')
-                success = self.plugin.rdk.prepare_complex(complex)
+                success = self.plugin.helper.prepare_complex(complex)
 
             self.ln_no_selection.enabled = not success
             self.ln_results.enabled = success
@@ -160,9 +160,9 @@ class MainMenu:
             self.lbl_complex.text_value = complex.full_name
             self.plugin.update_content(self.lbl_complex)
 
-            self.plugin.rdk.add_image(complex)
-            self.plugin.rdk.add_properties(complex)
-            self.plugin.rdk.add_smiles(complex)
+            self.plugin.helper.add_image(complex)
+            self.plugin.helper.add_properties(complex)
+            self.plugin.helper.add_smiles(complex)
 
             self.refresh_results()
 

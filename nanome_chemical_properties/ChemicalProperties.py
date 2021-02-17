@@ -1,27 +1,27 @@
 import nanome
 from .menus import MainMenu, SettingsMenu, SnapshotMenu, SnapshotsMenu
-from .RDKitHelper import RDKitHelper
+from .PropertiesHelper import PropertiesHelper
 
 class ChemicalProperties(nanome.PluginInstance):
     def start(self):
         self.set_plugin_list_button(self.PluginListButtonType.run, 'Open')
         self.set_plugin_list_button(self.PluginListButtonType.advanced_settings, 'Select Properties')
 
-        self.selected_properties = [0, 1, 2, 3, 4, 5, 6, 7]
-        self.snapshots = []
+        self.helper = PropertiesHelper()
+        self.selected_properties = list(range(self.helper.num_props))
 
-        self.rdk = RDKitHelper()
         self.menu_main = MainMenu(self)
         self.menu_settings = SettingsMenu(self)
         self.menu_snapshots = SnapshotsMenu(self)
 
+        self.snapshots = []
         self.snapshot_menu_index = 3
         self.snapshot_menus = []
 
         self.on_run()
 
     def on_stop(self):
-        del self.rdk
+        del self.helper
 
     def on_run(self):
         self.menu_main.show_menu()
