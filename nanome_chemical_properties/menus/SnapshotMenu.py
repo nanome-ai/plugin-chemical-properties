@@ -71,10 +71,9 @@ class SnapshotMenu:
         for index in self.plugin.selected_properties:
             prop = complex.properties[index]
             item = self.pfb_result.clone()
-            name = item.find_node('Name').get_content()
-            name.text_value = prop[0]
-            value = item.find_node('Value').get_content()
-            value.text_value = prop[2]
+            item.find_node('Name').get_content().text_value = prop[0]
+            item.get_content().tooltip.title = prop[1]
+            item.find_node('Value').get_content().text_value = prop[2]
             self.lst_results.items.append(item)
         self.plugin.update_content(self.lst_results)
 
