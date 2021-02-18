@@ -39,6 +39,7 @@ class MainMenu:
         self.ln_results = root.find_node('Results')
         self.ln_no_selection = root.find_node('No Selection')
 
+        self.btn_preview = self.ln_preview.get_content()
         self.btn_refresh = root.find_node('Button Refresh').get_content()
         self.btn_snapshots = root.find_node('Button Snapshots').get_content()
         self.btn_snapshot = root.find_node('Button Snapshot').get_content()
@@ -55,6 +56,7 @@ class MainMenu:
         img = root.find_node('Select Image').add_new_image(IMG_SELECTION)
         img.scaling_option = nanome.util.enums.ScalingOptions.fit
 
+        self.btn_preview.register_pressed_callback(self.open_preview)
         self.btn_refresh.register_pressed_callback(self.refresh_lists)
         self.btn_snapshot.register_pressed_callback(self.snapshot_complex)
 
@@ -204,6 +206,10 @@ class MainMenu:
         self.btn_snapshot.unusable = not complex_selected or snapshot_exists
         self.plugin.update_content(self.btn_snapshot)
 
+    def open_preview(self, button=None):
+        complex = self.selected_complex
+        self.plugin.send_files_to_load((complex.image, complex.name))
+
     def update_preview(self, text=None, image=None):
         lbl_enabled = self.ln_message.enabled
         if text:
@@ -215,11 +221,15 @@ class MainMenu:
                 self.ln_frame.enabled = True
                 self.ln_image.enabled = False
                 self.ln_image.remove_content()
+                self.btn_preview.unusable = True
+                self.btn_preview.tooltip.title = ''
                 self.plugin.update_node(self.ln_preview)
         elif image:
             self.ln_message.enabled = False
             self.ln_frame.enabled = False
             self.ln_image.enabled = True
+            self.btn_preview.unusable = False
+            self.btn_preview.tooltip.title = 'Open to Markup'
             img = self.ln_image.add_new_image(image)
             img.scaling_option = nanome.util.enums.ScalingOptions.fit
             self.plugin.update_node(self.ln_preview)
