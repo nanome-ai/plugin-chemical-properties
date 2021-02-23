@@ -39,6 +39,20 @@ PropertyValue = namedtuple(
 def within(min=-inf, max=inf):
     return lambda x: Color.White() if min <= x <= max else Color.Red()
 
+def gradient(colors):
+    for item in colors:
+        item[1] = Color.from_int(int(item[1], 16))
+
+    def color(x):
+        for (x1, c1), (x2, c2) in zip(colors[:-1], colors[1:]):
+            if x <= x1: return c1
+            if x > x2: continue
+            t = (x - x1) / (x2 - x1)
+            return c1 * (1 - t) + c2 * t
+        return colors[-1][1]
+
+    return color
+
 class PropertiesHelper:
     def __init__(self):
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -89,7 +103,17 @@ class PropertiesHelper:
         for endpoint in self.api.get('endpoints'):
             for prop, info in endpoint['properties'].items():
                 fn = partial(self.fetch_property, endpoint, prop)
-                p = Property(prop, info['description'], info['format'], fn)
+
+                color_fn = lambda x: Color.White()
+                color_settings = info.get('color')
+
+                if color_settings:
+                    if color_settings['type'] == 'within':
+                        color_fn = within(**color_settings['args'])
+                    elif color_settings['type'] == 'gradient':
+                        color_fn = gradient(**color_settings['args'])
+
+                p = Property(prop, info['description'], info['format'], fn, color_fn)
                 self._properties.append(p)
 
     @property
