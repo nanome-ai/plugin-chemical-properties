@@ -191,9 +191,11 @@ class MainMenu:
         for index in self.plugin.selected_properties:
             prop = self.selected_complex.properties[index]
             item = self.pfb_result.clone()
-            item.find_node('Name').get_content().text_value = prop[0]
-            item.get_content().tooltip.content = prop[1]
-            item.find_node('Value').get_content().text_value = prop[2]
+            item.find_node('Name').get_content().text_value = prop.name
+            item.get_content().tooltip.content = prop.description
+            value = item.find_node('Value').get_content()
+            value.text_value = prop.value
+            value.text_color = prop.color
             self.lst_results.items.append(item)
         self.plugin.update_content(self.lst_results)
 

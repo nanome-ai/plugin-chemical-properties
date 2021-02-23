@@ -1,4 +1,4 @@
-from nanome.util import Logs
+from nanome.util import Color, Logs
 
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
@@ -13,8 +13,10 @@ import requests
 import shutil
 import tempfile
 from cairosvg import svg2png
+from collections import namedtuple
 from datetime import datetime, timedelta
 from functools import partial
+from math import inf
 
 # mol 2d image drawing options
 Draw.DrawingOptions.atomLabelFontSize = 40
@@ -24,6 +26,19 @@ Draw.DrawingOptions.bondLineWidth = 8
 API_CACHE_TIME = timedelta(seconds=1)
 API_SETTINGS = os.path.join(os.path.dirname(__file__), '..', 'config.json')
 
+Property = namedtuple(
+    'Property',
+    ['name', 'description', 'format', 'fn', 'color_fn'],
+    defaults=['', '', '%s', lambda x: None, lambda x: Color.White()])
+
+PropertyValue = namedtuple(
+    'PropertyValue',
+    ['name', 'description', 'value', 'color'],
+    defaults=['', '', '', Color.White()])
+
+def within(min=-inf, max=inf):
+    return lambda x: Color.White() if min <= x <= max else Color.Red()
+
 class PropertiesHelper:
     def __init__(self):
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -32,14 +47,14 @@ class PropertiesHelper:
         self.api_cache = {}
         self.esol = ESOLCalculator()
         self._properties = [
-            ('MW', 'Molecular Weight', '%.3f', Desc.MolWt),
-            ('logP', 'Lipophilicity (logP)', '%.3f', lambda mol: mDesc.CalcCrippenDescriptors(mol)[0]),
-            ('TPSA', 'Total Polar Surface Area', '%.3f', mDesc.CalcTPSA),
-            ('ESOL', 'Estimated Solubility', '%.3f', self.esol.calc_esol),
-            ('HBA', '# H-Bond Acceptors', '%d', mDesc.CalcNumHBA),
-            ('HBD', '# H-Bond Donors', '%d', mDesc.CalcNumHBD),
-            ('RB', '# Rotatable Bonds', '%d', mDesc.CalcNumRotatableBonds),
-            ('AR', '# Aromatic Rings', '%d', mDesc.CalcNumAromaticRings)
+            Property('MW', 'Molecular Weight', '%.3f', Desc.MolWt, within(max=500)),
+            Property('logP', 'Lipophilicity (logP)', '%.3f', lambda mol: mDesc.CalcCrippenDescriptors(mol)[0], within(max=5)),
+            Property('TPSA', 'Total Polar Surface Area', '%.3f', mDesc.CalcTPSA),
+            Property('ESOL', 'Estimated Solubility', '%.3f', self.esol.calc_esol),
+            Property('HBA', '# H-Bond Acceptors', '%d', mDesc.CalcNumHBA, within(max=10)),
+            Property('HBD', '# H-Bond Donors', '%d', mDesc.CalcNumHBD, within(max=5)),
+            Property('RB', '# Rotatable Bonds', '%d', mDesc.CalcNumRotatableBonds),
+            Property('AR', '# Aromatic Rings', '%d', mDesc.CalcNumAromaticRings)
         ]
 
         if not os.path.exists(API_SETTINGS):
@@ -74,7 +89,7 @@ class PropertiesHelper:
         for endpoint in self.api.get('endpoints'):
             for prop, info in endpoint['properties'].items():
                 fn = partial(self.fetch_property, endpoint, prop)
-                p = (prop, info['description'], info['format'], fn)
+                p = Property(prop, info['description'], info['format'], fn)
                 self._properties.append(p)
 
     @property
@@ -160,10 +175,12 @@ class PropertiesHelper:
     # adds complex.properties
     def add_properties(self, complex):
         complex.properties = []
-        for short_lbl, long_lbl, fmt, fn in self._properties:
+        for short_lbl, long_lbl, fmt, fn, color_fn in self._properties:
             value = fn(complex.rdmol)
-            value = fmt % value if value is not None else 'ERR'
-            complex.properties.append((short_lbl, long_lbl, value))
+            color = Color.Red() if value is None else color_fn(value)
+            value = 'ERR' if  value is None else fmt % value
+            prop = PropertyValue(short_lbl, long_lbl, value, color)
+            complex.properties.append(prop)
 
     # adds complex.image
     def add_image(self, complex):

@@ -115,9 +115,11 @@ class SnapshotsMenu:
             ln.add_child(ln_img)
 
             for prop_index in self.plugin.selected_properties:
+                prop = complex.properties[prop_index]
                 ln_lbl = self.pfb_value.clone()
                 lbl = ln_lbl.get_content()
-                lbl.text_value = complex.properties[prop_index][2]
+                lbl.text_value = prop.value
+                lbl.text_color = prop.color
                 ln.add_child(ln_lbl)
 
             self.lst_snapshots.items.append(ln)
