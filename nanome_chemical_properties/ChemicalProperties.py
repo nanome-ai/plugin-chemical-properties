@@ -55,7 +55,7 @@ class ChemicalProperties(nanome.PluginInstance):
 def main():
     plugin = nanome.Plugin("Chemical Properties", "Calculates and displays different properties of chemicals using the RDKit Python library", "Analysis", True)
     plugin.set_plugin_class(ChemicalProperties)
-    plugin.run('127.0.0.1', 8888)
+    plugin.run()
 
 if __name__ == "__main__":
     main()

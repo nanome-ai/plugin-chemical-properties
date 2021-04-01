@@ -1,8 +1,12 @@
 #!/bin/bash
 
-if [ "$(docker ps -aq -f name=chemical-properties)" != "" ]; then
-    echo "removing exited container"
-    docker rm -f chemical-properties
+echo "./deploy.sh $*" > redeploy.sh
+chmod +x redeploy.sh
+
+existing=$(docker ps -aq -f name=chemical-properties)
+if [ -n "$existing" ]; then
+    echo "removing existing container"
+    docker rm -f $existing
 fi
 
 docker run -d \

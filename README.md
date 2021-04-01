@@ -1,28 +1,18 @@
 # Nanome - Chemical Properties
 
-A Nanome plugin to display chemical properties for a complex using rdkit
+A Nanome Plugin to display chemical properties for a complex using RDKit.
 
-### Installation
+## Dependencies
 
-```sh
-$ pip install nanome-chemical-properties
-```
+[Docker](https://docs.docker.com/get-docker/)
 
-### Dependencies
+When running outside of Docker:
 
 This plugin requires `rdkit` to be installed and in the `PATH` variable.
 
 Installation instructions for `rdkit` can be found [here](http://www.rdkit.org/docs/Install.html)
 
-### Usage
-
-To start the plugin:
-
-```sh
-$ nanome-chemical-properties -a <plugin_server_address>
-```
-
-### Docker Usage
+## Usage
 
 To run in a Docker container:
 
@@ -32,7 +22,7 @@ $ ./build.sh
 $ ./deploy.sh -a <plugin_server_address>
 ```
 
-#### Basic properties
+### Basic Properties
 
 In Nanome:
 
@@ -41,14 +31,14 @@ In Nanome:
 - Select Complex
 - View Results
 
-#### External Properties
+### External Properties
 
 This plugin supports configuration to fetch chemical properties from external sources. To get started, rename the `config.example.json` to `config.json`. In that file:
 
 `overwrite` - `true` will replace the default properties with the external ones. `false` will append external properties to the end of the list.\
 `endpoints` - list of url endpoints to fetch properties from.
 
-##### `endpoints`
+#### `endpoints`
 
 An endpoint is a url that can be queried for chemical properties. Each endpoint can be used to populate multiple properties. The currently supported modes are `GET smiles` and `POST sdf`, with a response type of `json`.
 
@@ -60,7 +50,7 @@ In `GET smiles` mode, the endpoint `url` is expected to contain the string `:smi
 `data` - either `sdf` or `smiles`\
 `properties` - a mapping of property names to config
 
-###### `properties`
+##### `properties`
 
 The properties configuration allows one endpoint to populate multiple properties. Each property has a `path` to find the property in the response body. For example, if the endpoint response body is `{"properties":{"prop1":1}}`, the `path` would be `properties.prop1`.
 
@@ -68,9 +58,9 @@ The properties configuration allows one endpoint to populate multiple properties
 `format` - format string to format the unit. example `"%.3f"`\
 `path` - path to the property in the response body
 
-#### Snapshots
+### Snapshots
 
-`nanome-chemical-properties` has a "snapshots" feature where you can take a snapshot of a complex to compare properties against other snapshots. Snapshots only persist while the plugin is active, so deactivating the plugin will lose the current snapshots.
+Chemical Properties has a "snapshots" feature where you can take a snapshot of a complex to compare properties against other snapshots. Snapshots only persist while the plugin is active, so deactivating the plugin will lose the current snapshots.
 
 To create a snapshot, select a complex and press the "snapshot" button.
 
@@ -82,6 +72,15 @@ In the snapshots view:
 - Pressing on a snapshot row will bring up a window containing a 2D rendering of the snapshot, as well as the snapshot timestamp and options to rename, load, or delete the snapshot.
 - Pressing "export csv" will save the snapshot names, SMILES string, and properties to ~\Documents\nanome\snaphots on the computer running Nanome.
 
-### License
+## Development
+
+To run Chemical Properties with autoreload:
+
+```sh
+$ python3 -m pip install -r requirements.txt
+$ python3 run.py -r -a <plugin_server_address> [optional args]
+```
+
+## License
 
 MIT
