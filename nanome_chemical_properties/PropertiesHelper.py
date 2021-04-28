@@ -15,6 +15,7 @@ import tempfile
 from cairosvg import svg2png
 from datetime import datetime, timedelta
 from functools import partial
+from urllib.parse import quote
 
 # mol 2d image drawing options
 Draw.DrawingOptions.atomLabelFontSize = 40
@@ -102,7 +103,7 @@ class PropertiesHelper:
             try:
                 if data == 'smiles' and method == 'GET':
                     smiles = Chem.MolToSmiles(rdmol)
-                    url = url.replace(':smiles', smiles)
+                    url = url.replace(':smiles', quote(smiles))
                     json = requests.get(url).json()
 
                 elif data == 'sdf' and method == 'POST':
