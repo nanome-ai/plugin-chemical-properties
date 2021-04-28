@@ -2,7 +2,7 @@ import nanome
 from .menus import MainMenu, SettingsMenu, SnapshotMenu, SnapshotsMenu
 from .PropertiesHelper import PropertiesHelper
 
-class ChemicalProperties(nanome.PluginInstance):
+class ChemicalProperties(nanome.AsyncPluginInstance):
     def start(self):
         self.set_plugin_list_button(self.PluginListButtonType.run, 'Open')
         self.set_plugin_list_button(self.PluginListButtonType.advanced_settings, 'Select Properties')
