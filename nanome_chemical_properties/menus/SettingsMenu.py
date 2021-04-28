@@ -31,28 +31,27 @@ class SettingsMenu:
         self.plugin.update_content(self.lst_properties)
 
     def populate_properties(self):
-        def property_pressed(button):
-            button.selected = not button.selected
-            self.plugin.update_content(button)
-
-            self.plugin.selected_properties.clear()
-            for item in self.lst_properties.items:
-                btn = item.get_content()
-                if btn.selected:
-                    self.plugin.selected_properties.append(btn.property_index)
-            self.refresh_properties()
-            self.plugin.refresh()
-
         labels = self.plugin.helper.long_labels
-
         self.lst_properties.items.clear()
         for i, label in enumerate(labels):
             item = self.pfb_property.clone()
             btn = item.get_content()
             btn.property_index = i
             btn.selected = i in self.plugin.selected_properties
-            btn.register_pressed_callback(property_pressed)
+            btn.register_pressed_callback(self.toggle_property)
             lbl = item.find_node('Label').get_content()
             lbl.text_value = label
             self.lst_properties.items.append(item)
         self.plugin.update_content(self.lst_properties)
+
+    def toggle_property(self, button):
+        button.selected = not button.selected
+        self.plugin.update_content(button)
+
+        self.plugin.selected_properties.clear()
+        for item in self.lst_properties.items:
+            btn = item.get_content()
+            if btn.selected:
+                self.plugin.selected_properties.append(btn.property_index)
+        self.refresh_properties()
+        self.plugin.refresh()

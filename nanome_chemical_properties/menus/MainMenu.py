@@ -72,102 +72,67 @@ class MainMenu:
         self.compute_results()
         self.refresh_results()
 
-    def refresh_complexes(self):
-        def select_complex(button):
-            if self.selected_index == button.complex.index:
-                return
+    @nanome.util.async_callback
+    async def refresh_complexes(self):
+        complexes = await self.plugin.request_complex_list()
+        self.display_complexes = [complex.index for complex in complexes]
 
-            if self.selected_complex:
-                self.selected_complex.register_complex_updated_callback(NO_CALLBACK)
-
+        if self.selected_index not in self.display_complexes:
             self.selected_index = None
+            self.selected_complex = None
             self.refresh_snapshot_button()
-
-            self.selected_index = button.complex.index
-            for item in self.lst_complexes.items:
-                btn = item.get_content()
-                if btn.selected:
-                    btn.selected = False
-                    self.plugin.update_content(btn)
-                    break
-            button.selected = True
-            self.plugin.update_content(button)
-
-            self.compute_results()
-
-        def display_complexes(complexes):
-            self.display_complexes = [complex.index for complex in complexes]
-
-            if self.selected_index not in self.display_complexes:
-                self.selected_index = None
-                self.selected_complex = None
-                self.refresh_snapshot_button()
-                self.refresh_results()
-
-            self.lst_complexes.items.clear()
-
-            for complex in complexes:
-                item = self.pfb_complex.clone()
-                btn = item.get_content()
-                btn.text.value.set_all(complex.full_name)
-                btn.complex = complex
-                btn.register_pressed_callback(select_complex)
-
-                if self.selected_index:
-                    btn.selected = complex.index == self.selected_index
-                if btn.selected:
-                    self.selected_index = complex.index
-
-                self.lst_complexes.items.append(item)
-
-            if not complexes:
-                self.lst_complexes.items.append(nanome.ui.LayoutNode())
-                ln = nanome.ui.LayoutNode()
-                lbl = ln.add_new_label('no structures')
-                lbl.text_max_size = 0.4
-                lbl.text_horizontal_align = nanome.util.enums.HorizAlignOptions.Middle
-                self.lst_complexes.items.append(ln)
-
-            self.plugin.update_content(self.lst_complexes)
-
-        self.plugin.request_complex_list(display_complexes)
-
-    def compute_results(self, button=None):
-        def complexes_received(complexes):
-            complex = complexes[0]
-            error = None
-
-            if len(list(complex.atoms)) > MAX_ATOM_COUNT:
-                success = False
-                error = 'structure too large to process'
-            else:
-                self.selected_complex = complex
-                self.update_preview(text='loading...')
-                success = self.plugin.helper.prepare_complex(complex)
-
-            self.ln_no_selection.enabled = not success
-            self.ln_results.enabled = success
-            self.plugin.update_node(self.ln_panel_right)
-
-            if not success:
-                self.selected_index = None
-                self.selected_complex = None
-                self.update_preview(text='preview')
-                self.plugin.send_notification(NotificationTypes.message, error or 'rdkit was unable to process the structure')
-                return
-
-            complex.register_complex_updated_callback(self.compute_results)
-            self.lbl_complex.text_value = complex.full_name
-            self.plugin.update_content(self.lbl_complex)
-
-            self.plugin.helper.add_image(complex)
-            self.plugin.helper.add_properties(complex)
-            self.plugin.helper.add_smiles(complex)
-
             self.refresh_results()
 
-            self.update_preview(image=complex.image)
+        self.lst_complexes.items.clear()
 
+        for complex in complexes:
+            item = self.pfb_complex.clone()
+            btn = item.get_content()
+            btn.text.value.set_all(complex.full_name)
+            btn.complex = complex
+            btn.register_pressed_callback(self.select_complex)
+
+            if self.selected_index:
+                btn.selected = complex.index == self.selected_index
+            if btn.selected:
+                self.selected_index = complex.index
+
+            self.lst_complexes.items.append(item)
+
+        if not complexes:
+            self.lst_complexes.items.append(nanome.ui.LayoutNode())
+            ln = nanome.ui.LayoutNode()
+            lbl = ln.add_new_label('no structures')
+            lbl.text_max_size = 0.4
+            lbl.text_horizontal_align = nanome.util.enums.HorizAlignOptions.Middle
+            self.lst_complexes.items.append(ln)
+
+        self.plugin.update_content(self.lst_complexes)
+
+    def select_complex(self, button):
+        if self.selected_index == button.complex.index:
+            return
+
+        if self.selected_complex:
+            self.selected_complex.register_complex_updated_callback(NO_CALLBACK)
+
+        self.selected_index = None
+        self.refresh_snapshot_button()
+
+        self.selected_index = button.complex.index
+        for item in self.lst_complexes.items:
+            btn = item.get_content()
+            if btn.selected:
+                btn.selected = False
+                self.plugin.update_content(btn)
+                break
+        button.selected = True
+        self.plugin.update_content(button)
+
+        self.compute_results()
+
+    @nanome.util.async_callback
+    async def compute_results(self, button=None):
         self.lbl_complex.text_value = 'loading...'
         self.lst_results.items.clear()
         self.plugin.update_node(self.ln_results)
@@ -175,7 +140,39 @@ class MainMenu:
         if not self.selected_index:
             return
 
-        self.plugin.request_complexes([self.selected_index], complexes_received)
+        [complex] = await self.plugin.request_complexes([self.selected_index])
+        error = None
+
+        if len(list(complex.atoms)) > MAX_ATOM_COUNT:
+            success = False
+            error = 'structure too large to process'
+        else:
+            self.selected_complex = complex
+            self.update_preview(text='loading...')
+            success = self.plugin.helper.prepare_complex(complex)
+
+        self.ln_no_selection.enabled = not success
+        self.ln_results.enabled = success
+        self.plugin.update_node(self.ln_panel_right)
+
+        if not success:
+            self.selected_index = None
+            self.selected_complex = None
+            self.update_preview(text='preview')
+            self.plugin.send_notification(NotificationTypes.message, error or 'rdkit was unable to process the structure')
+            return
+
+        complex.register_complex_updated_callback(self.compute_results)
+        self.lbl_complex.text_value = complex.full_name
+        self.plugin.update_content(self.lbl_complex)
+
+        self.plugin.helper.add_image(complex)
+        self.plugin.helper.add_properties(complex)
+        self.plugin.helper.add_smiles(complex)
+
+        self.refresh_results()
+
+        self.update_preview(image=complex.image)
 
     def refresh_results(self):
         if not self.selected_complex:
