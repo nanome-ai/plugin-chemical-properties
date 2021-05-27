@@ -1,4 +1,6 @@
 import nanome
+from nanome.util.enums import Integrations
+
 from .menus import MainMenu, SettingsMenu, SnapshotMenu, SnapshotsMenu
 from .PropertiesHelper import PropertiesHelper
 
@@ -53,7 +55,7 @@ class ChemicalProperties(nanome.AsyncPluginInstance):
         self.snapshot_menu_index += 1
 
 def main():
-    plugin = nanome.Plugin("Chemical Properties", "Calculates and displays different properties of chemicals using the RDKit Python library", "Analysis", True)
+    plugin = nanome.Plugin("Chemical Properties", "Calculates and displays different properties of chemicals using the RDKit Python library", "Analysis", True, integrations=[Integrations.analysis])
     plugin.set_plugin_class(ChemicalProperties)
     plugin.run()
 
