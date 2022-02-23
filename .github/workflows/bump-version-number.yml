@@ -45,6 +45,7 @@ jobs:
           token: ${{ secrets.NANOME_BOT_PAT }}
       - name: git setup
         run: |
+          git pull
           git config --global user.name 'nanome-bot'
           git config --global user.email '45469149+nanome-bot@users.noreply.github.com'
       - name: get version number
