@@ -1,4 +1,4 @@
-name: Update ECR Registry
+name: Push to ECR Registry
 
 on:
   push:
@@ -14,7 +14,11 @@ jobs:
         prefix=nanome-ai/plugin-
         git_repository="${{github.repository}}"
         repo_name=${git_repository/#$prefix} 
+        echo $repo_name
         echo "::set-output name=repo_name::$(echo $repo_name)"
+    - name: Get short SHA
+      id: sha
+      run: echo "::set-output name=sha7::$(echo ${GITHUB_SHA} | cut -c1-7)"
     - name: Check out code
       uses: actions/checkout@v2
     - name: Configure AWS credentials
@@ -35,3 +39,4 @@ jobs:
         context: .
         tags: |
           public.ecr.aws/h7r1e4h2/${{ steps.repoName.outputs.repo_name }}:latest
+          public.ecr.aws/h7r1e4h2/${{ steps.repoName.outputs.repo_name }}:${{ steps.sha.outputs.sha7 }}
