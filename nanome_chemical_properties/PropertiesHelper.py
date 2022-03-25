@@ -1,7 +1,7 @@
 from nanome.util import Logs
 
 from rdkit import Chem
-from rdkit.Chem import AllChem, Draw
+from rdkit.Chem import Draw
 import rdkit.Chem.Descriptors as Desc
 import rdkit.Chem.rdMolDescriptors as mDesc
 from .ESOLCalculator import ESOLCalculator
@@ -10,7 +10,6 @@ import json
 import os
 import re
 import requests
-import shutil
 import tempfile
 from cairosvg import svg2png
 from datetime import datetime, timedelta
@@ -173,7 +172,7 @@ class PropertiesHelper:
 
         mol = complex.rdmol
         Chem.AssignStereochemistryFrom3D(mol)
-        AllChem.Compute2DCoords(mol)
+        Chem.rdCoordGen.AddCoords(mol)
         mol = Draw.rdMolDraw2D.PrepareMolForDrawing(mol)
 
         drawer = Draw.rdMolDraw2D.MolDraw2DSVG(256, 192)
