@@ -1,2 +1,7 @@
 .git
 **/__pycache__
+*
+!plugin
+!config.json
+!requirements.txt
+!run.py
