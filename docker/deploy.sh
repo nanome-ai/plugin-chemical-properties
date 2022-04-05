@@ -3,14 +3,16 @@
 echo "./deploy.sh $*" > redeploy.sh
 chmod +x redeploy.sh
 
-existing=$(docker ps -aq -f name=chemical-properties)
+container_name="chemical-properties"
+existing=$(docker ps -aq -f name=$container_name)
 if [ -n "$existing" ]; then
     echo "removing existing container"
     docker rm -f $existing
 fi
 
 docker run -d \
---name chemical-properties \
+--name $container_name \
 --restart unless-stopped \
+-h $(hostname)-$container_name \
 -e ARGS="$*" \
-chemical-properties
+$container_name
