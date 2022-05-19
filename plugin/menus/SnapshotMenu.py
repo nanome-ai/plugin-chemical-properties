@@ -120,13 +120,8 @@ class SnapshotMenu:
         self.plugin.snapshots.remove(self.complex)
         self.plugin.refresh()
 
-    def load_snapshot(self, button=None, swap=False):
-        def on_complexes(complex, complex_list):
-            if complex_list[0]:
-                complex.position = complex_list[0].position
-                complex.rotation = complex_list[0].rotation
-            self.plugin.update_structures_deep([complex])
-
+    @nanome.util.async_callback
+    async def load_snapshot(self, button=None, swap=False):
         complex = self.complex
 
         if not swap:
@@ -135,4 +130,8 @@ class SnapshotMenu:
             self.plugin.update_structures_deep([complex])
             complex.index = index
         else:
-            self.plugin.request_complexes([complex.index], partial(on_complexes, complex))
+            complex_list = await self.plugin.request_complexes([complex.index])
+            if complex_list[0]:
+                complex.position = complex_list[0].position
+                complex.rotation = complex_list[0].rotation
+            self.plugin.update_structures_deep([complex])

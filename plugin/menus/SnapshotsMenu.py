@@ -126,7 +126,8 @@ class SnapshotsMenu:
 
         self.plugin.update_menu(self.menu)
 
-    def export_snapshots(self, button=None):
+    @nanome.util.async_callback
+    async def export_snapshots(self, button=None):
         file = nanome.util.FileSaveData()
         filename = datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.csv'
         file.path = 'snapshots\\' + filename
@@ -136,12 +137,8 @@ class SnapshotsMenu:
             values = list(list(zip(*complex.properties))[2])
             file.write_text(','.join([complex.full_name, complex.smiles] + values) + '\n')
 
-        def on_save_files_result(result_list):
-            result = result_list[0]
-
-            if result.error_code == nanome.util.FileErrorCode.no_error:
-                self.plugin.send_notification(NotificationTypes.success, 'saved to Documents\\nanome\\snapshots')
-            else:
-                self.plugin.send_notification(NotificationTypes.error, 'error exporting csv')
-
-        self.plugin.save_files([file], on_save_files_result)
+        [result] = await self.plugin.save_files([file])
+        if result.error_code == nanome.util.FileErrorCode.no_error:
+            self.plugin.send_notification(NotificationTypes.success, 'saved to Documents\\nanome\\snapshots')
+        else:
+            self.plugin.send_notification(NotificationTypes.error, 'error exporting csv')

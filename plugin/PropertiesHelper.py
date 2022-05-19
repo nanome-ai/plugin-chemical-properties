@@ -1,7 +1,7 @@
 from nanome.util import Color, Logs
 
 from rdkit import Chem
-from rdkit.Chem import AllChem, Draw
+from rdkit.Chem import Draw
 import rdkit.Chem.Descriptors as Desc
 import rdkit.Chem.rdMolDescriptors as mDesc
 from .ESOLCalculator import ESOLCalculator
@@ -10,13 +10,13 @@ import json
 import os
 import re
 import requests
-import shutil
 import tempfile
 from cairosvg import svg2png
 from collections import namedtuple
 from datetime import datetime, timedelta
 from functools import partial
 from math import inf
+from urllib.parse import quote
 
 # mol 2d image drawing options
 Draw.DrawingOptions.atomLabelFontSize = 40
@@ -141,7 +141,7 @@ class PropertiesHelper:
             try:
                 if data == 'smiles' and method == 'GET':
                     smiles = Chem.MolToSmiles(rdmol)
-                    url = url.replace(':smiles', smiles)
+                    url = url.replace(':smiles', quote(smiles))
                     json = requests.get(url).json()
 
                 elif data == 'sdf' and method == 'POST':
@@ -213,7 +213,7 @@ class PropertiesHelper:
 
         mol = complex.rdmol
         Chem.AssignStereochemistryFrom3D(mol)
-        AllChem.Compute2DCoords(mol)
+        Chem.rdCoordGen.AddCoords(mol)
         mol = Draw.rdMolDraw2D.PrepareMolForDrawing(mol)
 
         drawer = Draw.rdMolDraw2D.MolDraw2DSVG(256, 192)
