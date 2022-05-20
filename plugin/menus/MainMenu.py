@@ -1,4 +1,6 @@
 import nanome
+
+from nanome import ui
 from nanome.util import async_callback
 from nanome.util.enums import HorizAlignOptions, NotificationTypes, ScalingOptions
 
@@ -24,47 +26,47 @@ class MainMenu:
         self.create_menu()
 
     def create_menu(self):
-        self.menu = nanome.ui.Menu.io.from_json(MENU_PATH)
-        root = self.menu.root
+        self.menu = ui.Menu.io.from_json(MENU_PATH)
+        root: ui.LayoutNode = self.menu.root
 
-        self.pfb_complex = root.find_node('Prefab Complex')
-        self.pfb_result = root.find_node('Prefab Result')
+        self.pfb_complex: ui.LayoutNode = root.find_node('Prefab Complex')
+        self.pfb_result: ui.LayoutNode = root.find_node('Prefab Result')
 
-        self.ln_panel_left = root.find_node('Panel Left')
-        self.ln_panel_right = root.find_node('Panel Right')
+        self.ln_panel_left: ui.LayoutNode = root.find_node('Panel Left')
+        self.ln_panel_right: ui.LayoutNode = root.find_node('Panel Right')
 
-        self.ln_preview = root.find_node('Complex Preview')
-        self.ln_ligand_list = root.find_node('Ligand List Panel')
-        self.ln_message = root.find_node('Preview Message')
-        self.ln_frame = root.find_node('Preview Frame')
-        self.ln_image = root.find_node('Preview Image')
+        self.ln_preview: ui.LayoutNode = root.find_node('Complex Preview')
+        self.ln_ligand_list: ui.LayoutNode = root.find_node('Ligand List Panel')
+        self.ln_message: ui.LayoutNode = root.find_node('Preview Message')
+        self.ln_frame: ui.LayoutNode = root.find_node('Preview Frame')
+        self.ln_image: ui.LayoutNode = root.find_node('Preview Image')
 
-        self.ln_results = root.find_node('Results')
-        self.ln_no_selection = root.find_node('No Selection')
+        self.ln_results: ui.LayoutNode = root.find_node('Results')
+        self.ln_no_selection: ui.LayoutNode = root.find_node('No Selection')
 
-        self.btn_preview = self.ln_preview.get_content()
-        self.btn_refresh = root.find_node('Button Refresh').get_content()
-        self.btn_snapshots = root.find_node('Button Snapshots').get_content()
-        self.btn_snapshot = root.find_node('Button Snapshot').get_content()
+        self.btn_preview: ui.Button = self.ln_preview.get_content()
+        self.btn_refresh: ui.Button = root.find_node('Button Refresh').get_content()
+        self.btn_snapshots: ui.Button = root.find_node('Button Snapshots').get_content()
+        self.btn_snapshot: ui.Button = root.find_node('Button Snapshot').get_content()
 
-        self.lst_complexes = root.find_node('Structure List').get_content()
-        self.lst_ligands = root.find_node('Ligand List').get_content()
-        self.lst_results = root.find_node('Results List').get_content()
+        self.lst_complexes: ui.UIList = root.find_node('Structure List').get_content()
+        self.lst_ligands: ui.UIList = root.find_node('Ligand List').get_content()
+        self.lst_results: ui.UIList = root.find_node('Results List').get_content()
 
-        self.lbl_message = self.ln_message.get_content()
-        self.lbl_complex = root.find_node('Complex Title').get_content()
+        self.lbl_message: ui.Label = self.ln_message.get_content()
+        self.lbl_complex: ui.Label = root.find_node('Complex Title').get_content()
 
         # add images, callbacks, etc
         img = self.ln_frame.add_new_image(IMG_FRAME)
         img.scaling_option = ScalingOptions.fit
-        img = root.find_node('Select Image').add_new_image(IMG_SELECTION)
+        img: ui.Image = root.find_node('Select Image').add_new_image(IMG_SELECTION)
         img.scaling_option = ScalingOptions.fit
 
         self.btn_preview.register_pressed_callback(self.open_preview)
         self.btn_refresh.register_pressed_callback(self.refresh_lists)
         self.btn_snapshot.register_pressed_callback(self.snapshot_complex)
 
-        show_snapshots = lambda b: self.plugin.menu_snapshots.show_menu()
+        show_snapshots = lambda: self.plugin.menu_snapshots.show_menu()
         self.btn_snapshots.register_pressed_callback(show_snapshots)
 
     def show_menu(self):
@@ -110,8 +112,8 @@ class MainMenu:
             self.lst_complexes.items.append(item)
 
         if not complexes:
-            self.lst_complexes.items.append(nanome.ui.LayoutNode())
-            ln = nanome.ui.LayoutNode()
+            self.lst_complexes.items.append(ui.LayoutNode())
+            ln = ui.LayoutNode()
             lbl = ln.add_new_label('no structures')
             lbl.text_max_size = 0.4
             lbl.text_horizontal_align = HorizAlignOptions.Middle
@@ -158,7 +160,7 @@ class MainMenu:
         self.lst_ligands.items.clear()
         for i, ligand in enumerate([None, *ligand_complexes]):
             item = self.pfb_complex.clone()
-            btn = item.get_content()
+            btn: ui.Button = item.get_content()
             btn.text.value.set_all(ligand.name if ligand else 'none')
             btn.selected = not ligand
             btn.ligand = ligand
@@ -198,7 +200,7 @@ class MainMenu:
 
         self.selected_complex_index = button.complex_index
         for item in self.lst_complexes.items:
-            btn = item.get_content()
+            btn: ui.Button = item.get_content()
             if btn.selected:
                 btn.selected = False
                 self.plugin.update_content(btn)
@@ -272,10 +274,10 @@ class MainMenu:
         self.lst_results.items.clear()
         for index in self.plugin.selected_properties:
             prop = selected_complex.properties[index]
-            item = self.pfb_result.clone()
+            item: ui.LayoutNode = self.pfb_result.clone()
             item.find_node('Name').get_content().text_value = prop.name
             item.get_content().tooltip.content = prop.description
-            value = item.find_node('Value').get_content()
+            value: ui.Label = item.find_node('Value').get_content()
             value.text_value = prop.value
             value.text_color = prop.color
             self.lst_results.items.append(item)
