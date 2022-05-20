@@ -68,7 +68,7 @@ class SnapshotMenu:
         self.lbl_title.text_value = complex.full_name
 
         self.lst_results.items.clear()
-        for index in self.plugin.selected_properties:
+        for index in sorted(self.plugin.selected_properties):
             prop = complex.properties[index]
             item = self.pfb_result.clone()
             item.find_node('Name').get_content().text_value = prop.name

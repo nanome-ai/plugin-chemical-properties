@@ -272,14 +272,15 @@ class MainMenu:
             return
 
         self.lst_results.items.clear()
-        for index in self.plugin.selected_properties:
+        for index in sorted(self.plugin.selected_properties):
             prop = selected_complex.properties[index]
             item: ui.LayoutNode = self.pfb_result.clone()
             item.find_node('Name').get_content().text_value = prop.name
             item.get_content().tooltip.content = prop.description
             value: ui.Label = item.find_node('Value').get_content()
             value.text_value = prop.value
-            value.text_color = prop.color
+            if self.plugin.enable_colors:
+                value.text_color = prop.color
             self.lst_results.items.append(item)
         self.plugin.update_content(self.lst_results)
 

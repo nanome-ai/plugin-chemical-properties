@@ -65,7 +65,7 @@ class SnapshotsMenu:
         blank.get_content().text_value = ''
         self.ln_header.add_child(blank)
 
-        for prop_index in self.plugin.selected_properties:
+        for prop_index in sorted(self.plugin.selected_properties):
             heading = self.pfb_heading.clone()
             btn = heading.get_content()
             btn.text.value.set_all(self.plugin.helper.short_labels[prop_index])
@@ -114,7 +114,7 @@ class SnapshotsMenu:
             img.scaling_option = nanome.util.enums.ScalingOptions.fit
             ln.add_child(ln_img)
 
-            for prop_index in self.plugin.selected_properties:
+            for prop_index in sorted(self.plugin.selected_properties):
                 prop = complex.properties[prop_index]
                 ln_lbl = self.pfb_value.clone()
                 lbl = ln_lbl.get_content()
