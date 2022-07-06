@@ -7,10 +7,11 @@ from .PropertiesHelper import PropertiesHelper
 class ChemicalProperties(nanome.AsyncPluginInstance):
     def start(self):
         self.set_plugin_list_button(self.PluginListButtonType.run, 'Open')
-        self.set_plugin_list_button(self.PluginListButtonType.advanced_settings, 'Select Properties')
+        self.set_plugin_list_button(self.PluginListButtonType.advanced_settings, 'Settings')
 
         self.helper = PropertiesHelper()
-        self.selected_properties = list(range(self.helper.num_props))
+        self.selected_properties = set(range(self.helper.num_props))
+        self.enable_colors = True
 
         self.menu_main = MainMenu(self)
         self.menu_settings = SettingsMenu(self)

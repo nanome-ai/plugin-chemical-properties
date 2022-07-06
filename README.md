@@ -57,6 +57,18 @@ The properties configuration allows one endpoint to populate multiple properties
 `description` - description to show up in the "Select Properties" menu\
 `format` - format string to format the unit. example `"%.3f"`\
 `path` - path to the property in the response body
+`color` - optional color scheme to apply to the property, read below
+
+###### `property color`
+
+To colorize external properties, you can add the `color` config to a property. The two color `type`s are `within` and `gradient`, where `within` colors a property white if it is within the provided range and red otherwise, and `gradient` colors a property according to a gradient with the provided color stops. Examples are provided in the `config.example.json` file.
+
+`within` `args`:\
+  `min` - optional min bound\
+  `max` - optional max bound
+
+`gradient` `args`:\
+  `colors` - list of `[value, color]` pairs where `color` is a hexadecimal RGBA value (e.g. `"8000FFFF"` for purple). must be sorted ascending `value`
 
 ### Snapshots
 

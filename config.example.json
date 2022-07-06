@@ -10,12 +10,29 @@
         "PROP1": {
           "description": "Example Property 1",
           "format": "%.3f units",
-          "path": "path.to.prop1"
+          "path": "path.to.prop1",
+          "color": {
+            "type": "within",
+            "args": {
+              "min": 0,
+              "max": 10
+            }
+          }
         },
         "PROP2": {
           "description": "Example Property 2",
           "format": "%d",
-          "path": "prop2"
+          "path": "prop2",
+          "color": {
+            "type": "gradient",
+            "args": {
+              "colors": [
+                [0, "ff0000ff"],
+                [10, "00ff00ff"],
+                [20, "0000ffff"]
+              ]
+            }
+          }
         }
       }
     },

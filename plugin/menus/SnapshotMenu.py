@@ -35,6 +35,7 @@ class SnapshotMenu:
         self.lbl_timestamp = root.find_node('Snapshot Timestamp').get_content()
         self.lbl_smiles = root.find_node('SMILES').get_content()
 
+        self.btn_preview = self.ln_preview.get_content()
         self.btn_edit = root.find_node('Button Edit').get_content()
         self.btn_load = root.find_node('Button Load').get_content()
         self.btn_swap = root.find_node('Button Swap').get_content()
@@ -50,28 +51,14 @@ class SnapshotMenu:
         self.inp_title = self.ln_title_input.get_content()
         self.inp_title.register_submitted_callback(self.toggle_edit)
 
+        self.btn_preview.register_pressed_callback(self.open_preview)
         self.btn_edit.register_pressed_callback(self.toggle_edit)
         self.btn_load.register_pressed_callback(partial(self.load_snapshot, swap=False))
         self.btn_swap.register_pressed_callback(partial(self.load_snapshot, swap=True))
+        self.btn_delete.register_pressed_callback(self.delete_snapshot)
 
         self.btn_edit.icon.active = True
         self.btn_edit.icon.value.set_all(EDIT_ICON)
-
-        self.btn_delete.register_pressed_callback(self.delete_snapshot)
-        self.btn_delete.mesh.active = True
-        self.btn_delete.mesh.enabled.set_all(True)
-        self.btn_delete.mesh.color.set_all(nanome.util.Color(r=220))
-        self.btn_delete.mesh.color.highlighted = nanome.util.Color(r=200)
-        self.btn_delete.outline.active = False
-
-        self.btn_load.tooltip.title = 'Load as new entry'
-        self.btn_load.tooltip.positioning_target = self.btn_load.ToolTipPositioning.bottom
-        self.btn_load.tooltip.positioning_origin = self.btn_load.ToolTipPositioning.top
-        self.btn_load.tooltip.bounds.y = 0.25
-        self.btn_swap.tooltip.title = 'Replace original'
-        self.btn_swap.tooltip.positioning_target = self.btn_swap.ToolTipPositioning.bottom
-        self.btn_swap.tooltip.positioning_origin = self.btn_swap.ToolTipPositioning.top
-        self.btn_swap.tooltip.bounds.y = 0.25
 
         self.populate_menu()
         self.plugin.update_menu(self.menu)
@@ -81,13 +68,14 @@ class SnapshotMenu:
         self.lbl_title.text_value = complex.full_name
 
         self.lst_results.items.clear()
-        for index in self.plugin.selected_properties:
+        for index in sorted(self.plugin.selected_properties):
             prop = complex.properties[index]
             item = self.pfb_result.clone()
-            name = item.find_node('Name').get_content()
-            name.text_value = prop[0]
+            item.find_node('Name').get_content().text_value = prop.name
+            item.get_content().tooltip.content = prop.description
             value = item.find_node('Value').get_content()
-            value.text_value = prop[2]
+            value.text_value = prop.value
+            value.text_color = prop.color
             self.lst_results.items.append(item)
         self.plugin.update_content(self.lst_results)
 
@@ -96,6 +84,10 @@ class SnapshotMenu:
 
         self.lbl_timestamp.text_value = complex.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         self.lbl_smiles.text_value = complex.smiles
+
+    def open_preview(self, button=None):
+        complex = self.complex
+        self.plugin.send_files_to_load((complex.image, complex.name))
 
     def toggle_edit(self, button=None):
         is_editing = self.ln_title.enabled
