@@ -66,7 +66,7 @@ class MainMenu:
         self.btn_refresh.register_pressed_callback(self.refresh_lists)
         self.btn_snapshot.register_pressed_callback(self.snapshot_complex)
 
-        show_snapshots = lambda: self.plugin.menu_snapshots.show_menu()
+        show_snapshots = lambda _: self.plugin.menu_snapshots.show_menu()
         self.btn_snapshots.register_pressed_callback(show_snapshots)
 
     def show_menu(self):
