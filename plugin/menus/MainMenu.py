@@ -246,7 +246,8 @@ class MainMenu:
             self.update_preview(text=text)
             return
 
-        self.selected_complex.register_complex_updated_callback(self.refresh_selection)
+        if self.selected_complex:
+            self.selected_complex.register_complex_updated_callback(self.refresh_selection)
 
         self.lbl_complex.text_value = complex.full_name
         self.plugin.update_content(self.lbl_complex)
