@@ -102,7 +102,8 @@ class MainMenu:
 
         self.lst_complexes.items.clear()
         for complex in complexes:
-            item = self.pfb_complex.clone()
+            item: ui.LayoutNode = self.pfb_complex.clone()
+            item.enabled = True
             btn = item.get_content()
             btn.text.value.set_all(complex.full_name)
             btn.complex_index = complex.index
@@ -159,7 +160,8 @@ class MainMenu:
 
         self.lst_ligands.items.clear()
         for i, ligand in enumerate([None, *ligand_complexes]):
-            item = self.pfb_complex.clone()
+            item: ui.LayoutNode = self.pfb_complex.clone()
+            item.enabled = True
             btn: ui.Button = item.get_content()
             btn.text.value.set_all(ligand.name if ligand else 'none')
             btn.selected = not ligand
@@ -276,6 +278,7 @@ class MainMenu:
         for index in sorted(self.plugin.selected_properties):
             prop = selected_complex.properties[index]
             item: ui.LayoutNode = self.pfb_result.clone()
+            item.enabled = True
             item.find_node('Name').get_content().text_value = prop.name
             item.get_content().tooltip.content = prop.description
             value: ui.Label = item.find_node('Value').get_content()
