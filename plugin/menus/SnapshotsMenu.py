@@ -1,4 +1,5 @@
 import nanome
+from nanome import ui
 from nanome.util.enums import NotificationTypes
 
 import os
@@ -19,13 +20,13 @@ class SnapshotsMenu:
         self.menu.enabled = False
         root = self.menu.root
 
-        self.pfb_heading = root.find_node('Prefab Heading')
-        self.pfb_value = root.find_node('Prefab Value')
+        self.pfb_heading: ui.LayoutNode = root.find_node('Prefab Heading')
+        self.pfb_value: ui.LayoutNode = root.find_node('Prefab Value')
 
-        self.ln_header = root.find_node('Header')
-        self.lst_snapshots = root.find_node('Snapshot List').get_content()
+        self.ln_header: ui.LayoutNode = root.find_node('Header')
+        self.lst_snapshots: ui.UIList = root.find_node('Snapshot List').get_content()
 
-        self.btn_export = root.find_node('Export Button').get_content()
+        self.btn_export: ui.Button = root.find_node('Export Button').get_content()
         self.btn_export.register_pressed_callback(self.export_snapshots)
 
     def show_menu(self):
@@ -61,13 +62,15 @@ class SnapshotsMenu:
     def refresh_snapshots_header(self, button=None):
         self.ln_header.clear_children()
 
-        blank = self.pfb_value.clone()
+        blank: ui.LayoutNode = self.pfb_value.clone()
+        blank.enabled = True
         blank.get_content().text_value = ''
         self.ln_header.add_child(blank)
 
         for prop_index in sorted(self.plugin.selected_properties):
-            heading = self.pfb_heading.clone()
-            btn = heading.get_content()
+            heading: ui.LayoutNode = self.pfb_heading.clone()
+            heading.enabled = True
+            btn: ui.Button = heading.get_content()
             btn.text.value.set_all(self.plugin.helper.short_labels[prop_index])
             btn.prop_index = prop_index
             btn.selected = self.snapshots_sort[0] == prop_index
@@ -109,15 +112,17 @@ class SnapshotsMenu:
             btn.complex = complex
             btn.register_pressed_callback(lambda b: self.plugin.view_snapshot(b.complex))
 
-            ln_img = self.pfb_value.clone()
+            ln_img: ui.LayoutNode = self.pfb_value.clone()
+            ln_img.enabled = True
             img = ln_img.add_new_image(complex.thumbnail)
             img.scaling_option = nanome.util.enums.ScalingOptions.fit
             ln.add_child(ln_img)
 
             for prop_index in sorted(self.plugin.selected_properties):
                 prop = complex.properties[prop_index]
-                ln_lbl = self.pfb_value.clone()
-                lbl = ln_lbl.get_content()
+                ln_lbl: ui.LayoutNode = self.pfb_value.clone()
+                ln_lbl.enabled = True
+                lbl: ui.Label = ln_lbl.get_content()
                 lbl.text_value = prop.value
                 lbl.text_color = prop.color
                 ln.add_child(ln_lbl)

@@ -1,4 +1,5 @@
 import nanome
+from nanome import ui
 from nanome.util.enums import NotificationTypes
 
 import os
@@ -25,30 +26,30 @@ class SnapshotMenu:
         self.menu.index = self.index
         root = self.menu.root
 
-        self.pfb_result = root.find_node('Prefab Result')
+        self.pfb_result: ui.LayoutNode = root.find_node('Prefab Result')
 
-        self.ln_panel_left = root.find_node('Panel Left')
-        self.ln_panel_right = root.find_node('Panel Right')
+        self.ln_panel_left: ui.LayoutNode = root.find_node('Panel Left')
+        self.ln_panel_right: ui.LayoutNode = root.find_node('Panel Right')
 
-        self.ln_preview = root.find_node('Complex Preview')
-        self.ln_image = root.find_node('Preview Image')
-        self.lbl_timestamp = root.find_node('Snapshot Timestamp').get_content()
-        self.lbl_smiles = root.find_node('SMILES').get_content()
+        self.ln_preview: ui.LayoutNode = root.find_node('Complex Preview')
+        self.ln_image: ui.LayoutNode = root.find_node('Preview Image')
+        self.lbl_timestamp: ui.Label = root.find_node('Snapshot Timestamp').get_content()
+        self.lbl_smiles: ui.Label = root.find_node('SMILES').get_content()
 
-        self.btn_preview = self.ln_preview.get_content()
-        self.btn_edit = root.find_node('Button Edit').get_content()
-        self.btn_load = root.find_node('Button Load').get_content()
-        self.btn_swap = root.find_node('Button Swap').get_content()
-        self.btn_delete = root.find_node('Button Delete').get_content()
+        self.btn_preview: ui.Button = self.ln_preview.get_content()
+        self.btn_edit: ui.Button = root.find_node('Button Edit').get_content()
+        self.btn_load: ui.Button = root.find_node('Button Load').get_content()
+        self.btn_swap: ui.Button = root.find_node('Button Swap').get_content()
+        self.btn_delete: ui.Button = root.find_node('Button Delete').get_content()
 
-        self.lst_results = root.find_node('Results List').get_content()
+        self.lst_results: ui.UIList = root.find_node('Results List').get_content()
 
-        self.ln_header = root.find_node('Complex Header')
-        self.ln_title = root.find_node('Complex Title')
-        self.lbl_title = self.ln_title.get_content()
+        self.ln_header: ui.LayoutNode = root.find_node('Complex Header')
+        self.ln_title: ui.LayoutNode = root.find_node('Complex Title')
+        self.lbl_title: ui.Label = self.ln_title.get_content()
 
-        self.ln_title_input = root.find_node('Input Title')
-        self.inp_title = self.ln_title_input.get_content()
+        self.ln_title_input: ui.LayoutNode = root.find_node('Input Title')
+        self.inp_title: ui.TextInput = self.ln_title_input.get_content()
         self.inp_title.register_submitted_callback(self.toggle_edit)
 
         self.btn_preview.register_pressed_callback(self.open_preview)
@@ -70,7 +71,8 @@ class SnapshotMenu:
         self.lst_results.items.clear()
         for index in sorted(self.plugin.selected_properties):
             prop = complex.properties[index]
-            item = self.pfb_result.clone()
+            item: ui.LayoutNode = self.pfb_result.clone()
+            item.enabled = True
             item.find_node('Name').get_content().text_value = prop.name
             item.get_content().tooltip.content = prop.description
             value = item.find_node('Value').get_content()
