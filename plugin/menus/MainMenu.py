@@ -299,7 +299,8 @@ class MainMenu:
 
     def open_preview(self, button=None):
         complex = self.selected_complex
-        self.plugin.send_files_to_load((complex.image, complex.name))
+        if getattr(complex, 'image', None):
+            self.plugin.send_files_to_load((complex.image, complex.name))
 
     def update_preview(self, text=None, image=None):
         lbl_enabled = self.ln_message.enabled
