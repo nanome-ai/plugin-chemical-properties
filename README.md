@@ -40,14 +40,17 @@ This plugin supports configuration to fetch chemical properties from external so
 
 #### `endpoints`
 
-An endpoint is a url that can be queried for chemical properties. Each endpoint can be used to populate multiple properties. The currently supported modes are `GET smiles` and `POST sdf`, with a response type of `json`.
+An endpoint is a url that can be queried for chemical properties. Each endpoint can be used to populate multiple properties. The currently supported modes are `GET smiles`, `POST smiles`, and `POST sdf`, with a response type of `json`.
 
 In `GET smiles` mode, the endpoint `url` is expected to contain the string `:smiles`. When this endpoint is queried, the smiles for the chemical in question will replace `:smiles`. Example: `example.com/chem/:smiles` or `example.com/chem?q=:smiles`.
+
+In `POST smiles` mode, the `payload` is expected to contain the string `:smiles`. When this endpoint is queried, the smiles for the chemical in question will replace `:smiles`. Example: `{"smiles":":smiles"}`.
 
 `name` - unique name for the endpoint\
 `url` - endpoint url\
 `method` - either `GET` or `POST`\
 `data` - either `sdf` or `smiles`\
+`payload` - for `POST smiles` requests, the json payload to send containing `:smiles`\
 `properties` - a mapping of property names to config
 
 ##### `properties`

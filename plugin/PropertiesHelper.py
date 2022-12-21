@@ -90,6 +90,8 @@ class PropertiesHelper:
                     raise Exception('Invalid config: missing endpoint name')
 
                 test = [endpoint[k] for k in required_endpoint_keys]
+                if endpoint['method'] == 'POST' and endpoint['data'] == 'smiles':
+                    test = endpoint['payload']
                 for prop, info in endpoint.get('properties').items():
                     test = [info[k] for k in required_property_keys]
 
@@ -143,6 +145,12 @@ class PropertiesHelper:
                     smiles = Chem.MolToSmiles(rdmol)
                     url = url.replace(':smiles', quote(smiles))
                     json = requests.get(url).json()
+
+                elif data == 'smiles' and method == 'POST':
+                    smiles = Chem.MolToSmiles(rdmol)
+                    payload = endpoint['payload'].replace(':smiles', smiles)
+                    headers = {'Content-Type': 'application/json'}
+                    json = requests.post(url, headers=headers, data=payload).json()
 
                 elif data == 'sdf' and method == 'POST':
                     Chem.SDWriter(self.temp_sdf.name).write(rdmol)
