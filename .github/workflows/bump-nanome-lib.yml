@@ -20,7 +20,7 @@ jobs:
             echo "nanome-lib ${{ github.event.inputs.version_number }} not found"
             exit 1
           fi
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.NANOME_BOT_PAT }}
       - name: git setup
