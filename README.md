@@ -51,6 +51,7 @@ In `POST smiles` mode, the `payload` is expected to contain the string `:smiles`
 `method` - either `GET` or `POST`\
 `data` - either `sdf` or `smiles`\
 `cache_time` - time in seconds to cache result for same SMILES (default 30).\
+`verify` - set to `false` to disable SSL verification\
 `headers` - optional headers object to send with the request\
 `payload` - for `POST smiles` requests, the payload to send containing `:smiles`\
 `properties` - a mapping of property names to config

@@ -17,6 +17,10 @@ from datetime import datetime, timedelta
 from functools import partial
 from math import inf
 from urllib.parse import quote
+from urllib3.exceptions import InsecureRequestWarning
+
+# disable insecure request warning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 # mol 2d image drawing options
 Draw.DrawingOptions.atomLabelFontSize = 40
@@ -141,12 +145,13 @@ class PropertiesHelper:
             url = endpoint['url']
             method = endpoint['method']
             data = endpoint['data']
+            verify = endpoint.get('verify', True)
             headers = endpoint.get('headers', {})
 
             try:
                 if data == 'smiles' and method == 'GET':
                     url = url.replace(':smiles', quote(smiles))
-                    result = requests.get(url, headers=headers).json()
+                    result = requests.get(url, verify=verify, headers=headers).json()
 
                 elif data == 'smiles' and method == 'POST':
                     payload = endpoint['payload']
@@ -155,12 +160,12 @@ class PropertiesHelper:
                     payload = payload.replace(':smiles', smiles)
                     if headers.get('Content-Type') != 'application/json':
                         payload = json.loads(payload)
-                    result = requests.post(url, headers=headers, data=payload).json()
+                    result = requests.post(url, verify=verify, headers=headers, data=payload).json()
 
                 elif data == 'sdf' and method == 'POST':
                     Chem.SDWriter(self.temp_sdf.name).write(mol)
                     files = {'file': open(self.temp_sdf.name, 'rb')}
-                    result = requests.post(url, headers=headers, files=files).json()
+                    result = requests.post(url, verify=verify, headers=headers, files=files).json()
                 else:
                     Logs.error(f'Unsupported request type: {method} {data} on {name}')
                     return None
