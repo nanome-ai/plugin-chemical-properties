@@ -95,7 +95,8 @@ class PropertiesHelper:
 
                 test = [endpoint[k] for k in required_endpoint_keys]
                 if endpoint['method'] == 'POST' and endpoint['data'] == 'smiles':
-                    test = endpoint['payload']
+                    if not endpoint.get('query'):
+                        test = endpoint['payload']
                 for prop, info in endpoint.get('properties').items():
                     test = [info[k] for k in required_property_keys]
 
@@ -147,25 +148,41 @@ class PropertiesHelper:
             data = endpoint['data']
             verify = endpoint.get('verify', True)
             headers = endpoint.get('headers', {})
+            query = endpoint.get('query', {})
+
+            for key in query.keys():
+                if isinstance(query[key], dict):
+                    query[key] = json.dumps(query[key])
+                if isinstance(query[key], str):
+                    query[key] = query[key].replace(':smiles', smiles)
 
             try:
                 if data == 'smiles' and method == 'GET':
                     url = url.replace(':smiles', quote(smiles))
-                    result = requests.get(url, verify=verify, headers=headers).json()
+                    result = requests.get(url, verify=verify, headers=headers, params=query).json()
 
                 elif data == 'smiles' and method == 'POST':
-                    payload = endpoint['payload']
-                    if type(payload) != str:
-                        payload = json.dumps(payload)
-                    payload = payload.replace(':smiles', smiles)
-                    if headers.get('Content-Type') != 'application/json':
-                        payload = json.loads(payload)
-                    result = requests.post(url, verify=verify, headers=headers, data=payload).json()
+                    payload = endpoint.get('payload', {})
+                    if payload:
+                        if not isinstance(payload, str):
+                            payload = json.dumps(payload)
+                        payload = payload.replace(':smiles', smiles)
+                        if headers.get('Content-Type') != 'application/json':
+                            payload = json.loads(payload)
+
+                        # support json in url-encoded form
+                        if headers.get('Content-Type') == 'application/x-www-form-urlencoded' and isinstance(payload, dict):
+                            for key in payload.keys():
+                                if isinstance(payload[key], dict):
+                                    payload[key] = json.dumps(payload[key])
+
+                    result = requests.post(url, verify=verify, headers=headers, params=query, data=payload).json()
 
                 elif data == 'sdf' and method == 'POST':
                     Chem.SDWriter(self.temp_sdf.name).write(mol)
                     files = {'file': open(self.temp_sdf.name, 'rb')}
-                    result = requests.post(url, verify=verify, headers=headers, files=files).json()
+                    result = requests.post(url, verify=verify, headers=headers, params=query, files=files).json()
+
                 else:
                     Logs.error(f'Unsupported request type: {method} {data} on {name}')
                     return None

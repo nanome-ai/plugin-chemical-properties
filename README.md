@@ -44,15 +44,16 @@ An endpoint is a url that can be queried for chemical properties. Each endpoint 
 
 In `GET smiles` mode, the endpoint `url` is expected to contain the string `:smiles`. When this endpoint is queried, the smiles for the chemical in question will replace `:smiles`. Example: `example.com/chem/:smiles` or `example.com/chem?q=:smiles`.
 
-In `POST smiles` mode, the `payload` is expected to contain the string `:smiles`. When this endpoint is queried, the smiles for the chemical in question will replace `:smiles`. Example: `{"smiles":":smiles"}`.
+In `POST smiles` mode, either the `payload` or `query` is expected to contain the string `:smiles`. When this endpoint is queried, the smiles for the chemical in question will replace `:smiles`. Example: `{"smiles":":smiles"}`.
 
 `name` - unique name for the endpoint\
 `url` - endpoint url\
 `method` - either `GET` or `POST`\
 `data` - either `sdf` or `smiles`\
-`cache_time` - time in seconds to cache result for same SMILES (default 30).\
+`cache_time` - time in seconds to cache external properties for same SMILES (default 30)\
 `verify` - set to `false` to disable SSL verification\
 `headers` - optional headers object to send with the request\
+`query` - optional key-value query params to add to the URL. JSON objects will be serialized and URL-encoded\
 `payload` - for `POST smiles` requests, the payload to send containing `:smiles`\
 `properties` - a mapping of property names to config
 
